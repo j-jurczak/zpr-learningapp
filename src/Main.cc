@@ -11,7 +11,7 @@
 #include "gui/views/ViewFactory.h"
 
 int main( int argc, char *argv[] ) {
-    qputenv( "LIBGL_ALWAYS_SOFTWARE", "1" );  // to fix my fucking wls
+    qputenv( "LIBGL_ALWAYS_SOFTWARE", "1" );
     QApplication app( argc, argv );
 
     // database setup

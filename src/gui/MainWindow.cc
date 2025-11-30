@@ -49,9 +49,9 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     sets_view_ = factory_.create( ViewType::SETS, this );
     settings_view_ = factory_.create( ViewType::SETTINGS, this );
 
-    main_stack_->addWidget( home_view_ );      // Index 0 (ViewType::HOME)
-    main_stack_->addWidget( sets_view_ );      // Index 1 (ViewType::SETS)
-    main_stack_->addWidget( settings_view_ );  // Index 2 (ViewType::SETTINGS)
+    main_stack_->addWidget( home_view_ );
+    main_stack_->addWidget( sets_view_ );
+    main_stack_->addWidget( settings_view_ );
 
     main_layout->addWidget( main_stack_ );
 
