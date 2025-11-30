@@ -14,7 +14,7 @@
 
 MainWindow::MainWindow( QWidget* parent_widget ) : QMainWindow( parent_widget ) {
     setWindowTitle( "LearningApp" );
-    resize( 1024, 768 );
+    resize( 1250, 750 );
 
     QWidget* central_widget = new QWidget( this );
     setCentralWidget( central_widget );
@@ -61,7 +61,6 @@ MainWindow::MainWindow( QWidget* parent_widget ) : QMainWindow( parent_widget ) 
 }
 
 void MainWindow::setupConnections() {
-    // Przełączanie widoków przy użyciu rzutowania Enuma na int
     connect( btn_home_, &QPushButton::clicked, this,
              [this]() { main_stack_->setCurrentIndex( static_cast<int>( ViewType::HOME ) ); } );
 
