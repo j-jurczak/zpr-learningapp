@@ -8,16 +8,18 @@
 #include <QPushButton>
 #include <QStackedWidget>
 
-#include "ViewType.h"
+#include "views/ViewFactory.h"
+#include "views/ViewType.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow( QWidget* parent_widget = nullptr );
+    explicit MainWindow( ViewFactory& factory, QWidget* parent = nullptr );
     ~MainWindow();
 
 private:
+    ViewFactory& factory_;
     void setupStyles();
     void setupConnections();
 

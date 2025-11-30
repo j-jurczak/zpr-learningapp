@@ -6,9 +6,15 @@
 #pragma once
 #include <QWidget>
 
+#include "../../db/DatabaseManager.h"
 #include "ViewType.h"
 
 class ViewFactory {
 public:
-    static QWidget* create( ViewType type, QWidget* parent = nullptr );
+    explicit ViewFactory( DatabaseManager& db );
+
+    QWidget* create( ViewType type, QWidget* parent = nullptr );
+
+private:
+    DatabaseManager& db_;
 };

@@ -1,6 +1,6 @@
 /*
  * @authors: Jakub Jurczak, Mateusz Woźniak
- * summary: Main file for the LearningApp application
+ * summary: Main file for the LearningApp project
  */
 
 #include <QApplication>
@@ -8,32 +8,24 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 
+#include "db/DatabaseManager.h"
 #include "gui/MainWindow.h"
-
-bool connectToDatabase() {
-    QSqlDatabase db_instance = QSqlDatabase::addDatabase( "QSQLITE" );
-    db_instance.setDatabaseName( "learning_app.db" );
-
-    if ( !db_instance.open() ) {
-        qCritical() << "Blad polaczenia z baza:" << db_instance.lastError().text();
-        return false;
-    }
-
-    qDebug() << "Polaczono z baza danych!";
-    return true;
-}
+#include "gui/views/ViewFactory.h"
 
 int main( int argc, char *argv[] ) {
+    // fix my fucking wls
     qputenv( "LIBGL_ALWAYS_SOFTWARE", "1" );
-
     QApplication app( argc, argv );
 
-    if ( !connectToDatabase() ) {
-        return -1;
-    }
+    // database setup
+    DatabaseManager db_manager;
+    if ( !db_manager.connect() || !db_manager.createTables() ) return -1;
+    db_manager.seedData();
 
-    MainWindow main_window;
+    // run app
+    ViewFactory view_factory( db_manager );
+
+    MainWindow main_window( view_factory );
     main_window.show();
-
     return app.exec();
 }

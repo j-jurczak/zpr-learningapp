@@ -5,19 +5,20 @@
 
 #include "ViewFactory.h"
 
-#include <QWidget>
+#include "HomeView.h"
+#include "SetsView.h"
+#include "SettingsView.h"
 
-#include "views/HomeView.h"
-#include "views/SetsView.h"
-#include "views/SettingsView.h"
+ViewFactory::ViewFactory( DatabaseManager& db ) : db_( db ) {}
 
 QWidget* ViewFactory::create( ViewType type, QWidget* parent ) {
     switch ( type ) {
+        case ViewType::SETS:
+            // Tu używamy pola klasy db_, a nie argumentu
+            return new SetsView( db_, parent );
+
         case ViewType::HOME:
             return new HomeView( parent );
-
-        case ViewType::SETS:
-            return new SetsView( parent );
 
         case ViewType::SETTINGS:
             return new SettingsView( parent );
