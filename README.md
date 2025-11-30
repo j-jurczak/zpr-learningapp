@@ -5,8 +5,9 @@
  - SQLite
  - Catch2
 ## Sposób kompilacji i uruchamiania programu
+W pierwszej kolejności trzeba utworzyć folder build: *"mkdir build"* oraz *"cd build"*
+
 Aby skompilować/uruchomić projekt należy:
-1. wywołać komendę *"mkdir build"* oraz *"cd build"*
-2. wywołać komendę *"cmake .."*
-3. wywołać komendę *"cmake --build ."*
-4. po kompilacji uruchomić testy za pomocą *"ctest"* bądź aplikację za pomocą *"./src/LearningApp"*
+1. wywołać komendę *"cmake .."*
+2. wywołać komendę *"cmake --build ."*
+3. po kompilacji uruchomić testy za pomocą *"ctest"* bądź aplikację za pomocą *"./src/LearningApp"*
