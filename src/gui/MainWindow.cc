@@ -2,17 +2,16 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class of the main application window - source file.
  */
-
-#include "MainWindow.h"
-
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include "MainWindow.h"
+#include "views/ViewType.h"
+#include "views/ViewFactory.h"
 
-#include "ViewFactory.h"
-
-MainWindow::MainWindow( QWidget* parent_widget ) : QMainWindow( parent_widget ) {
+MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
+    : QMainWindow( parent ), factory_( factory ) {
     setWindowTitle( "LearningApp" );
     resize( 1250, 750 );
 
@@ -46,9 +45,9 @@ MainWindow::MainWindow( QWidget* parent_widget ) : QMainWindow( parent_widget ) 
     // view 'subwindow'
     main_stack_ = new QStackedWidget( this );
 
-    home_view_ = ViewFactory::create( ViewType::HOME, this );
-    sets_view_ = ViewFactory::create( ViewType::SETS, this );
-    settings_view_ = ViewFactory::create( ViewType::SETTINGS, this );
+    home_view_ = factory_.create( ViewType::HOME, this );
+    sets_view_ = factory_.create( ViewType::SETS, this );
+    settings_view_ = factory_.create( ViewType::SETTINGS, this );
 
     main_stack_->addWidget( home_view_ );      // Index 0 (ViewType::HOME)
     main_stack_->addWidget( sets_view_ );      // Index 1 (ViewType::SETS)

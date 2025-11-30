@@ -2,5 +2,6 @@
 <RCC version="1.0">
     <qresource prefix="/">
         <file>resources/MainWindow.qss</file>
+        <file>resources/SetsView.qss</file>
     </qresource>
 </RCC>

@@ -2,7 +2,6 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Home view of the application - header file.
  */
-
 #pragma once
 #include <QPushButton>
 #include <QWidget>

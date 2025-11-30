@@ -2,22 +2,21 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class of the main application window - header file.
  */
-
 #pragma once
 #include <QMainWindow>
 #include <QPushButton>
 #include <QStackedWidget>
-
-#include "ViewType.h"
+#include "views/ViewFactory.h"
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow( QWidget* parent_widget = nullptr );
+    explicit MainWindow( ViewFactory& factory, QWidget* parent = nullptr );
     ~MainWindow();
 
 private:
+    ViewFactory& factory_;
     void setupStyles();
     void setupConnections();
 

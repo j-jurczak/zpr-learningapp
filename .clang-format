@@ -17,6 +17,6 @@ PointerAlignment: Left
 
 ColumnLimit:     100
 
-SortIncludes:    true
+SortIncludes:    false
 
 AccessModifierOffset: -4

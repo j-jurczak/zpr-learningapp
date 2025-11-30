@@ -1,10 +1,19 @@
 
 add_library(CoreLib STATIC
+# core files
+    core/Card.cc
+    core/Card.h
+    core/CardTypes.h
     core/LearningSession.cc
     core/LearningSession.h
+    core/StudySet.h
+
+    # DB
+    db/DatabaseManager.cc
+    db/DatabaseManager.h
 )
 
-target_link_libraries(CoreLib PRIVATE Qt6::Sql) # SQLite 
+target_link_libraries(CoreLib PUBLIC Qt6::Sql) # SQLite 
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
@@ -15,10 +24,9 @@ add_library(GuiLib STATIC
     gui/MainWindow.cc
     gui/MainWindow.h
     
-    gui/ViewFactory.cc
-    gui/ViewFactory.h
-    gui/ViewType.h
-
+    gui/views/ViewFactory.cc
+    gui/views/ViewFactory.h
+    gui/views/ViewType.h
     gui/views/SetsView.cc
     gui/views/SetsView.h
     gui/views/SettingsView.cc
@@ -27,13 +35,6 @@ add_library(GuiLib STATIC
     gui/views/HomeView.h
 
     resources.qrc
-
-    # core files
-    core/Card.cc
-    core/Card.h
-    core/CardTypes.h
-    core/LearningSession.cc
-    core/LearningSession.h
 )
 
 target_link_libraries(GuiLib PRIVATE Qt6::Widgets CoreLib)
