@@ -8,7 +8,7 @@
 #include <QSqlDatabase>
 #include <QSqlError>
 
-#include "../gui/MainWindow.h"
+#include "gui/MainWindow.h"
 
 bool connectToDatabase() {
     QSqlDatabase db_instance = QSqlDatabase::addDatabase( "QSQLITE" );
