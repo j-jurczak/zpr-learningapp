@@ -2,20 +2,18 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class DatabaseManager, manages database connections and operations - source file.
  */
-
-#include "DatabaseManager.h"
-
 #include <QDebug>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QStringList>
 #include <QVariant>
+#include "DatabaseManager.h"
+using namespace std;
 
 DatabaseManager::DatabaseManager() {}
 
 bool DatabaseManager::connect() {
     QString db_path = "learning_app.db";
-
     database_ = QSqlDatabase::addDatabase( "QSQLITE" );
     database_.setDatabaseName( db_path );
 
@@ -24,7 +22,7 @@ bool DatabaseManager::connect() {
         return false;
     }
 
-    qDebug() << "Successfully connected to DB: " << db_path;
+    // qDebug() << "Successfully connected to DB: " << db_path;
     return true;
 }
 
@@ -70,7 +68,6 @@ void DatabaseManager::seedData() {
     QSqlQuery check( "SELECT COUNT(*) FROM sets" );
     if ( check.next() && check.value( 0 ).toInt() > 0 ) return;
 
-    qDebug() << "Seeding database...";
     QSqlQuery q;
 
     q.exec( "INSERT INTO sets (name) VALUES ('Angielski Podstawy')" );
@@ -87,21 +84,48 @@ void DatabaseManager::seedData() {
     q.addBindValue( 0 );  // FLASHCARD
     q.exec();
 
-    // choice card
+    // choice cards
     q.prepare(
         "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, answer_type) VALUES "
         "(?,?,?,?,?)" );
     q.addBindValue( set_id );
     q.addBindValue( "Kolor nieba?" );
     q.addBindValue( "Blue" );
-    q.addBindValue( "Red;Green;Yellow" );  // Dystraktory oddzielone średnikiem
-    q.addBindValue( 1 );                   // CHOICE
+    q.addBindValue( "Red;Green;Yellow" );
+    q.addBindValue( 1 );  // CHOICE
+    q.exec();
+
+    q.prepare(
+        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, answer_type) VALUES "
+        "(?,?,?,?,?)" );
+    q.addBindValue( set_id );
+    q.addBindValue( "'Chicken' to po polsku..." );
+    q.addBindValue( "Kurczak" );
+    q.addBindValue( "Indyk;Kaczka;Gęś" );
+    q.addBindValue( 1 );
+    q.exec();
+
+    q.prepare(
+        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, answer_type) VALUES "
+        "(?,?,?,?,?)" );
+    q.addBindValue( set_id );
+    q.addBindValue( "'Trousers' to po polsku..." );
+    q.addBindValue( "Spodnie" );
+    q.addBindValue( "Krótkie spodenki;Buty;Piżama" );
+    q.addBindValue( 1 );
     q.exec();
 }
 
+void DatabaseManager::flushData() {
+    QSqlQuery q;
+    q.exec( "DELETE FROM learning_progress" );
+    q.exec( "DELETE FROM cards" );
+    q.exec( "DELETE FROM sets" );
+}
+
 // select query for all study sets
-std::vector<StudySet> DatabaseManager::getAllSets() {
-    std::vector<StudySet> results;
+vector<StudySet> DatabaseManager::getAllSets() {
+    vector<StudySet> results;
     QSqlQuery query( "SELECT id, name FROM sets" );
 
     while ( query.next() ) {
@@ -114,8 +138,8 @@ std::vector<StudySet> DatabaseManager::getAllSets() {
 }
 
 // select query for all cards in a given set
-std::vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
-    std::vector<Card> cards;
+vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
+    vector<Card> cards;
     QSqlQuery query;
     query.prepare( "SELECT * FROM cards WHERE set_id = :id" );
     query.bindValue( ":id", set_id );
@@ -123,24 +147,23 @@ std::vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
 
     while ( query.next() ) {
         int id = query.value( "id" ).toInt();
-        std::string q_text = query.value( "question" ).toString().toStdString();
-        std::string ans_text = query.value( "correct_answer" ).toString().toStdString();
+        string q_text = query.value( "question" ).toString().toStdString();
+        string ans_text = query.value( "correct_answer" ).toString().toStdString();
         int type_val = query.value( "answer_type" ).toInt();
 
-        CardData data;  // std::variant
-
+        CardData data;  // variant
+        // todo: handle other types
         if ( type_val == 1 ) {  // CHOICE
             QString raw_wrong = query.value( "wrong_answers" ).toString();
             QStringList parts = raw_wrong.split( ";", Qt::SkipEmptyParts );
-            std::vector<std::string> wrong_vec;
+            vector<string> wrong_vec;
             for ( const auto& p : parts ) wrong_vec.push_back( p.toStdString() );
-
             data = ChoiceData{ ans_text, wrong_vec };
         } else {
             data = StandardData{ ans_text };
         }
 
-        cards.emplace_back( id, set_id, q_text, std::move( data ) );
+        cards.emplace_back( id, set_id, q_text, move( data ) );
     }
     return cards;
 }

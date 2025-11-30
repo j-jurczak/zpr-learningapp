@@ -2,14 +2,12 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class of the main application window - source file.
  */
-
-#include "MainWindow.h"
-
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
-
+#include "MainWindow.h"
+#include "views/ViewType.h"
 #include "views/ViewFactory.h"
 
 MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )

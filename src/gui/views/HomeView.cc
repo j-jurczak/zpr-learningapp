@@ -2,12 +2,10 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Home view of the application - source file.
  */
-
-#include "HomeView.h"
-
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include "HomeView.h"
 
 HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
     this->setObjectName( "content" );

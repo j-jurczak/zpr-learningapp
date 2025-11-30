@@ -2,13 +2,11 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Sets view of the application - source file.
  */
-
-#include "SetsView.h"
-
 #include <QFile>
 #include <QLabel>
 #include <QListWidgetItem>
 #include <QVBoxLayout>
+#include "SetsView.h"
 
 SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     QVBoxLayout* layout = new QVBoxLayout( this );

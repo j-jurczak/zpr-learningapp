@@ -2,16 +2,14 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class representing a learning session, holder of cards being learned - header file.
  */
-
 #pragma once
 #include <vector>
-
 #include "Card.h"
 
 class LearningSession {
 public:
     LearningSession();
-
+    LearningSession( std::vector<Card> cards );
     void loadCards( std::vector<Card> cards );
     void start();
     const Card& getCurrentCard() const;

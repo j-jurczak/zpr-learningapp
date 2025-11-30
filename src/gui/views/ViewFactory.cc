@@ -2,9 +2,7 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary:  Factory class for creating different views in the application - source file.
  */
-
 #include "ViewFactory.h"
-
 #include "HomeView.h"
 #include "SetsView.h"
 #include "SettingsView.h"
@@ -14,7 +12,6 @@ ViewFactory::ViewFactory( DatabaseManager& db ) : db_( db ) {}
 QWidget* ViewFactory::create( ViewType type, QWidget* parent ) {
     switch ( type ) {
         case ViewType::SETS:
-            // Tu używamy pola klasy db_, a nie argumentu
             return new SetsView( db_, parent );
 
         case ViewType::HOME:

@@ -1,8 +1,7 @@
 /*
  * @authors: Jakub Jurczak, Mateusz Woźniak
- * summary: Struct for storing study set information
+ * summary: Struct for storing study set information in DB.
  */
-
 #pragma once
 #include <string>
 

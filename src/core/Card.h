@@ -7,7 +7,6 @@
 #include <string_view>
 #include <variant>
 #include <vector>
-
 #include "CardTypes.h"
 
 struct StandardData {
@@ -44,4 +43,5 @@ private:
     std::string question_;
     MediaType media_type_;
     CardData data_;
+    static bool areStringsEqual( std::string_view a, std::string_view b );
 };

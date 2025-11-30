@@ -2,7 +2,6 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class DatabaseManager, manages database connections and operations - header file.
  */
-
 #pragma once
 #include <QSqlDatabase>
 #include <string>
@@ -18,6 +17,7 @@ public:
     bool connect();
     bool createTables();
     void seedData();
+    void flushData();
 
     std::vector<StudySet> getAllSets();
     std::vector<Card> getCardsForSet( int set_id );
