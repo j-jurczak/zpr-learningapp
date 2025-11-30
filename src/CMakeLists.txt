@@ -11,13 +11,37 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON) # automatic file generation for Qt resources
 
 add_library(GuiLib STATIC
-    ../gui/MainWindow.cc
-    ../gui/MainWindow.h
+    # gui files
+    gui/MainWindow.cc
+    gui/MainWindow.h
+    
+    gui/ViewFactory.cc
+    gui/ViewFactory.h
+    gui/ViewType.h
+
+    gui/views/SetsView.cc
+    gui/views/SetsView.h
+    gui/views/SettingsView.cc
+    gui/views/SettingsView.h
+    gui/views/HomeView.cc
+    gui/views/HomeView.h
+
+    resources.qrc
+
+    # core files
+    core/Card.cc
+    core/Card.h
+    core/CardTypes.h
+    core/LearningSession.cc
+    core/LearningSession.h
 )
 
 target_link_libraries(GuiLib PRIVATE Qt6::Widgets CoreLib)
 
-add_executable(LearningApp Main.cc)
+add_executable(LearningApp 
+    Main.cc
+    resources.qrc
+)
 
 target_link_libraries(LearningApp PRIVATE 
     GuiLib 
