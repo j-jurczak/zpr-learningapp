@@ -13,15 +13,10 @@ public:
     LearningSession();
 
     void loadCards( std::vector<Card> cards );
-
     void start();
-
     const Card& getCurrentCard() const;
-
     bool nextCard();
-
     void submitGrade( int grade );
-
     float getProgress() const;
 
 private:

@@ -35,7 +35,7 @@ bool LearningSession::nextCard() {
 }
 
 void LearningSession::submitGrade( int grade ) {
-    // to do: implement SM-2 algorithm integration
+    // to do: implement grading logic
 }
 
 float LearningSession::getProgress() const {
