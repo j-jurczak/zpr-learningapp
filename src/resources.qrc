@@ -4,5 +4,6 @@
         <file>resources/MainWindow.qss</file>
         <file>resources/SetsView.qss</file>
         <file>resources/AddSetView.qss</file>
+        <file>resources/SetView.qss</file>
     </qresource>
 </RCC>

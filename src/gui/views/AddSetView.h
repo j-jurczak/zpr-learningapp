@@ -33,6 +33,7 @@ protected:
 
 private:
     void setupUi();
+    void setupStyles();
     void resetCardForm();
 
     DatabaseManager& db_;

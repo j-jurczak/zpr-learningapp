@@ -20,6 +20,7 @@ struct DraftCard {
 class DatabaseManager {
 public:
     DatabaseManager();
+    ~DatabaseManager();
 
     bool connect();
     bool createTables();
@@ -29,6 +30,7 @@ public:
     std::vector<StudySet> getAllSets();
     std::optional<StudySet> getSet( int set_id );
     std::vector<Card> getCardsForSet( int set_id );
+
     bool createSet( const std::string& set_name, const std::vector<DraftCard>& cards );
 
 private:

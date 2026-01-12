@@ -18,13 +18,7 @@ AddSetView::AddSetView( DatabaseManager& db, QWidget* parent ) : QWidget( parent
     setupUi();
 
     overlay_ = new CardPreviewOverlay( this );
-
-    QFile file( ":/resources/AddSetView.qss" );
-    if ( file.open( QFile::ReadOnly ) ) {
-        QString style_sheet = QLatin1String( file.readAll() );
-        this->setStyleSheet( style_sheet );
-        file.close();
-    }
+    setupStyles();
 }
 
 void AddSetView::resizeEvent( QResizeEvent* event ) {
@@ -126,6 +120,14 @@ void AddSetView::setupUi() {
     connect( btn_add_card, &QPushButton::clicked, this, &AddSetView::addCardToDraft );
     connect( btn_save, &QPushButton::clicked, this, &AddSetView::saveSet );
     connect( btn_cancel, &QPushButton::clicked, this, &AddSetView::creationCancelledClicked );
+}
+
+void AddSetView::setupStyles() {
+    QFile file( ":/resources/AddSetView.qss" );
+    if ( file.open( QFile::ReadOnly ) ) {
+        this->setStyleSheet( QString::fromLatin1( file.readAll() ) );
+        file.close();
+    }
 }
 
 void AddSetView::addWrongAnswerField() {

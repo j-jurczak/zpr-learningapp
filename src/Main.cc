@@ -17,8 +17,6 @@ int main( int argc, char *argv[] ) {
     // database setup
     DatabaseManager db_manager;
     if ( !db_manager.connect() || !db_manager.createTables() ) return -1;
-    db_manager.flushData();
-    db_manager.seedData();
 
     // run app
     ViewFactory view_factory( db_manager );
