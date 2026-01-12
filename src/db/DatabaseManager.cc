@@ -137,6 +137,21 @@ vector<StudySet> DatabaseManager::getAllSets() {
     return results;
 }
 
+// select query for a specific study set by id
+optional<StudySet> DatabaseManager::getSet( int set_id ) {
+    QSqlQuery query;
+    query.prepare( "SELECT id, name FROM sets WHERE id = :id" );
+    query.bindValue( ":id", set_id );
+
+    if ( query.exec() && query.next() ) {
+        StudySet s;
+        s.id = query.value( "id" ).toInt();
+        s.name = query.value( "name" ).toString().toStdString();
+        return s;
+    }
+    return std::nullopt;
+}
+
 // select query for all cards in a given set
 vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
     vector<Card> cards;
@@ -166,4 +181,58 @@ vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
         cards.emplace_back( id, set_id, q_text, move( data ) );
     }
     return cards;
+}
+
+// insert query to create a new set with its cards
+bool DatabaseManager::createSet( const std::string& set_name,
+                                 const std::vector<DraftCard>& cards ) {
+    database_.transaction();
+
+    QSqlQuery query;
+    query.prepare( "INSERT INTO sets (name) VALUES (?)" );
+    query.addBindValue( QString::fromStdString( set_name ) );
+
+    if ( !query.exec() ) {
+        qCritical() << "Nie udalo sie dodac zestawu:" << query.lastError().text();
+        database_.rollback();
+        return false;
+    }
+
+    int new_set_id = query.lastInsertId().toInt();
+
+    query.prepare(
+        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, media_type, "
+        "answer_type) "
+        "VALUES (?, ?, ?, ?, 0, ?)" );
+
+    for ( const auto& card : cards ) {
+        QString q = QString::fromStdString( card.question );
+        QString correct = QString::fromStdString( card.correct_answer );
+        QString wrong_str = "";
+        int answer_type = 0;
+
+        if ( !card.wrong_answers.empty() ) {
+            answer_type = 1;
+
+            QStringList wrong_list;
+            for ( const auto& wa : card.wrong_answers ) {
+                wrong_list << QString::fromStdString( wa );
+            }
+            wrong_str = wrong_list.join( ";" );
+        }
+
+        query.addBindValue( new_set_id );
+        query.addBindValue( q );
+        query.addBindValue( correct );
+        query.addBindValue( wrong_str );
+        query.addBindValue( answer_type );
+
+        if ( !query.exec() ) {
+            qCritical() << "Nie udalo sie dodac karty:" << query.lastError().text();
+            database_.rollback();
+            return false;
+        }
+    }
+
+    return database_.commit();
 }

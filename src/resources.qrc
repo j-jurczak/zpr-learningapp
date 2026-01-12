@@ -3,5 +3,6 @@
     <qresource prefix="/">
         <file>resources/MainWindow.qss</file>
         <file>resources/SetsView.qss</file>
+        <file>resources/AddSetView.qss</file>
     </qresource>
 </RCC>

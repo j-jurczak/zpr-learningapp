@@ -13,6 +13,10 @@ public:
     explicit SetsView( DatabaseManager& db, QWidget* parent = nullptr );
     void refreshSetsList();
 
+signals:
+    void setClicked( int set_id );
+    void newSetClicked();
+
 private:
     void setupStyles();
     QListWidget* list_widget_;

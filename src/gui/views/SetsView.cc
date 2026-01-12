@@ -7,6 +7,8 @@
 #include <QListWidgetItem>
 #include <QVBoxLayout>
 #include "SetsView.h"
+#include <QPushButton>
+#include <QDebug>
 
 SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     QVBoxLayout* layout = new QVBoxLayout( this );
@@ -18,10 +20,26 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
     title->setAlignment( Qt::AlignLeft );
     layout->addWidget( title );
 
+    QPushButton* btn_new = new QPushButton( "+ Nowy Zestaw", this );
+
+    btn_new->setObjectName( "btn_new_set" );
+
+    layout->addWidget( btn_new );
+
+    connect( btn_new, &QPushButton::clicked, this, [this]() {
+        qDebug() << "1. Kliknieto przycisk 'Nowy Zestaw' w SetsView";
+        emit newSetClicked();
+    } );
+
     list_widget_ = new QListWidget( this );
     list_widget_->setObjectName( "list_widget" );
     layout->addWidget( list_widget_ );
 
+    connect( list_widget_, &QListWidget::itemClicked, this, [this]( QListWidgetItem* item ) {
+        int id = item->data( Qt::UserRole ).toInt();
+
+        emit setClicked( id );
+    } );
     setupStyles();
     refreshSetsList();
 }

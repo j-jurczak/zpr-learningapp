@@ -32,6 +32,9 @@ bool Card::checkAnswer( std::string_view user_answer ) const {
         },
         data_ );
 }
+const string& Card::getCorrectAnswer() const {
+    return visit( []( const auto& d ) -> const string& { return d.correct_answer; }, data_ );
+}
 
 vector<string> Card::getChoices() const {
     if ( const ChoiceData* choice = get_if<ChoiceData>( &data_ ) ) {
