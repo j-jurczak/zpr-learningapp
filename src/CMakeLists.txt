@@ -7,6 +7,11 @@ add_library(CoreLib STATIC
     core/LearningSession.cc
     core/LearningSession.h
     core/StudySet.h
+    core/utils/SetImporter.cc
+    core/utils/SetImporter.h
+    core/utils/importers/IImportStrategy.h
+    core/utils/importers/JsonImportStrategy.cc
+    core/utils/importers/JsonImportStrategy.h
 
     # DB
     db/DatabaseManager.cc
@@ -33,6 +38,17 @@ add_library(GuiLib STATIC
     gui/views/SettingsView.h
     gui/views/HomeView.cc
     gui/views/HomeView.h
+    gui/views/SetView.cc
+    gui/views/SetView.h
+    gui/views/AddSetView.cc
+    gui/views/AddSetView.h
+
+    gui/overlays/CardPreviewOverlay.h
+    gui/overlays/CardPreviewOverlay.cc
+    gui/overlays/AddCardOverlay.h
+    gui/overlays/AddCardOverlay.cc
+    gui/overlays/OverlayContainer.h
+    gui/overlays/OverlayContainer.cc
 
     resources.qrc
 )

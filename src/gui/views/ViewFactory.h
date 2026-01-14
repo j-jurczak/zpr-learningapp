@@ -4,13 +4,14 @@
  */
 #pragma once
 #include <QWidget>
+#include <QVariant>
 #include "../../db/DatabaseManager.h"
 #include "ViewType.h"
 
 class ViewFactory {
 public:
     explicit ViewFactory( DatabaseManager& db );
-    QWidget* create( ViewType type, QWidget* parent = nullptr );
+    QWidget* create( ViewType type, QVariant data = {}, QWidget* parent = nullptr );
 
 private:
     DatabaseManager& db_;

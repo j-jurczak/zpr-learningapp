@@ -28,6 +28,7 @@ public:
     Card() = default;
 
     bool checkAnswer( std::string_view user_answer ) const;
+    const std::string& getCorrectAnswer() const;
 
     std::vector<std::string> getChoices() const;
 

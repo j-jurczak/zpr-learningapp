@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QPushButton>
 #include "HomeView.h"
 
 HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
@@ -42,4 +43,6 @@ HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
     layout->addWidget( subtitle_label );
     layout->addLayout( buttons_layout );
     layout->addStretch();
+
+    connect( btn_new_set_, &QPushButton::clicked, this, &HomeView::newSetClicked );
 }

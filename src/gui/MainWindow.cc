@@ -2,13 +2,20 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class of the main application window - source file.
  */
+#include "MainWindow.h"
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
-#include "MainWindow.h"
+#include <QStackedWidget>
+#include <QDebug>
+
 #include "views/ViewType.h"
 #include "views/ViewFactory.h"
+#include "views/SetsView.h"
+#include "views/SetView.h"
+#include "views/AddSetView.h"
+#include "views/HomeView.h"
 
 MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     : QMainWindow( parent ), factory_( factory ) {
@@ -45,9 +52,9 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     // view 'subwindow'
     main_stack_ = new QStackedWidget( this );
 
-    home_view_ = factory_.create( ViewType::HOME, this );
-    sets_view_ = factory_.create( ViewType::SETS, this );
-    settings_view_ = factory_.create( ViewType::SETTINGS, this );
+    home_view_ = factory_.create( ViewType::HOME, {}, this );
+    sets_view_ = factory_.create( ViewType::SETS, {}, this );
+    settings_view_ = factory_.create( ViewType::SETTINGS, {}, this );
 
     main_stack_->addWidget( home_view_ );
     main_stack_->addWidget( sets_view_ );
@@ -60,14 +67,93 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
 }
 
 void MainWindow::setupConnections() {
+    // sidebar buttons
     connect( btn_home_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentIndex( static_cast<int>( ViewType::HOME ) ); } );
+             [this]() { main_stack_->setCurrentWidget( home_view_ ); } );
 
     connect( btn_sets_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentIndex( static_cast<int>( ViewType::SETS ) ); } );
+             [this]() { main_stack_->setCurrentWidget( sets_view_ ); } );
 
     connect( btn_settings_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentIndex( static_cast<int>( ViewType::SETTINGS ) ); } );
+             [this]() { main_stack_->setCurrentWidget( settings_view_ ); } );
+
+    // sets view logic
+    if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
+        // qDebug() << "MainWindow: SetsView identified.";
+
+        connect( sets_view_ptr, &SetsView::setClicked, this, [this]( int set_id ) {
+            QWidget* detail_view = factory_.create( ViewType::SET_VIEW, set_id, this );
+
+            main_stack_->addWidget( detail_view );
+            main_stack_->setCurrentWidget( detail_view );
+
+            if ( auto* detail_ptr = qobject_cast<SetView*>( detail_view ) ) {
+                connect( detail_ptr, &SetView::backToSetsClicked, this, [this, detail_view]() {
+                    main_stack_->setCurrentWidget( sets_view_ );
+                    main_stack_->removeWidget( detail_view );
+                    detail_view->deleteLater();
+                } );
+            }
+        } );
+        connect( sets_view_ptr, &SetsView::newSetClicked, this, [this, sets_view_ptr]() {
+            // qDebug() << "MainWindow: received signal: newSetClicked";
+
+            QWidget* add_view = factory_.create( ViewType::ADD_SET, {}, this );
+
+            main_stack_->addWidget( add_view );
+            main_stack_->setCurrentWidget( add_view );
+
+            if ( auto* add_ptr = qobject_cast<AddSetView*>( add_view ) ) {
+                connect( add_ptr, &AddSetView::creationCancelled, this, [this, add_view]() {
+                    main_stack_->setCurrentWidget( sets_view_ );
+                    main_stack_->removeWidget( add_view );
+                    add_view->deleteLater();
+                } );
+
+                connect( add_ptr, &AddSetView::setCreated, this, [this, add_view, sets_view_ptr]() {
+                    qDebug() << "MainWindow: Zestaw utworzony - odświeżam listę.";
+
+                    sets_view_ptr->refreshSetsList();
+
+                    main_stack_->setCurrentWidget( sets_view_ );
+                    main_stack_->removeWidget( add_view );
+                    add_view->deleteLater();
+                } );
+
+            } else {
+                qCritical() << "MainWindow BŁĄD: Nie udało się rzutować na AddSetView!";
+            }
+        } );
+    }
+    // home view logic
+    if ( auto* home_ptr = qobject_cast<HomeView*>( home_view_ ) ) {
+        connect( home_ptr, &HomeView::newSetClicked, this, [this]() {
+            QWidget* add_view = factory_.create( ViewType::ADD_SET, {}, this );
+
+            main_stack_->addWidget( add_view );
+            main_stack_->setCurrentWidget( add_view );
+
+            if ( auto* add_ptr = qobject_cast<AddSetView*>( add_view ) ) {
+                connect( add_ptr, &AddSetView::creationCancelled, this, [this, add_view]() {
+                    main_stack_->setCurrentWidget( home_view_ );
+                    main_stack_->removeWidget( add_view );
+                    add_view->deleteLater();
+                } );
+
+                connect( add_ptr, &AddSetView::setCreated, this, [this, add_view]() {
+                    if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
+                        sets_ptr->refreshSetsList();
+                    }
+
+                    main_stack_->setCurrentWidget( sets_view_ );
+                    main_stack_->removeWidget( add_view );
+                    add_view->deleteLater();
+                } );
+            }
+        } );
+    } else {
+        qCritical() << "MainWindow BŁĄD KRYTYCZNY: sets_view_ nie jest typu SetsView!";
+    }
 }
 
 void MainWindow::setupStyles() {
