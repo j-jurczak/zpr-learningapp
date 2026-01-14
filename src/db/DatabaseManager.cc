@@ -35,6 +35,9 @@ bool DatabaseManager::connect() {
         qCritical() << "Error opening database:" << database_.lastError().text();
         return false;
     }
+    QSqlQuery q;
+    q.exec( "PRAGMA foreign_keys = ON;" );
+
     return createTables();
 }
 
@@ -238,4 +241,68 @@ bool DatabaseManager::createSet( const std::string& set_name,
     }
 
     return database_.commit();
+}
+
+// delete query to remove a set by id
+bool DatabaseManager::deleteSet( int set_id ) {
+    QSqlQuery query;
+    query.prepare( "DELETE FROM sets WHERE id = :id" );
+    query.bindValue( ":id", set_id );
+
+    if ( !query.exec() ) {
+        qCritical() << "Nie udało się usunąć zestawu ID:" << set_id
+                    << " Błąd:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+// insert query to add a single card to an existing set
+bool DatabaseManager::addCardToSet( int set_id, const DraftCard& card ) {
+    QSqlQuery query;
+    query.prepare(
+        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, media_type, "
+        "answer_type) "
+        "VALUES (:sid, :q, :a, :w, 0, :type)" );
+
+    QString wrong_str = "";
+    int answer_type = 0;
+
+    if ( !card.wrong_answers.empty() ) {
+        answer_type = 1;
+        QStringList wrong_list;
+        for ( const auto& wa : card.wrong_answers ) {
+            wrong_list << QString::fromStdString( wa );
+        }
+        wrong_str = wrong_list.join( ";" );
+    }
+
+    query.bindValue( ":sid", set_id );
+    query.bindValue( ":q", QString::fromStdString( card.question ) );
+    query.bindValue( ":a", QString::fromStdString( card.correct_answer ) );
+    query.bindValue( ":w", wrong_str );
+    query.bindValue( ":type", answer_type );
+
+    if ( !query.exec() ) {
+        qCritical() << "Błąd dodawania pojedynczej karty:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+// delete query to remove a set by id
+bool DatabaseManager::deleteCard( int card_id ) {
+    QSqlQuery query;
+    query.prepare( "DELETE FROM cards WHERE id = :id" );
+    query.bindValue( ":id", card_id );
+
+    if ( !query.exec() ) {
+        qCritical() << "Nie udało się usunąć karty ID:" << card_id
+                    << " Błąd:" << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }

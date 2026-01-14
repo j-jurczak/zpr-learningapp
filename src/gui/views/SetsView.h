@@ -13,6 +13,9 @@ public:
     explicit SetsView( DatabaseManager& db, QWidget* parent = nullptr );
     void refreshSetsList();
 
+protected:
+    void showEvent( QShowEvent* event ) override;
+
 signals:
     void setClicked( int set_id );
     void newSetClicked();

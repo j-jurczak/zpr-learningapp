@@ -5,37 +5,26 @@
 #include "CardPreviewOverlay.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QLabel>
+#include <QFrame>
 #include <QPushButton>
-#include <QMouseEvent>
 
-CardPreviewOverlay::CardPreviewOverlay( QWidget* parent ) : QWidget( parent ) {
-    this->hide();
-
-    this->setAutoFillBackground( true );
-
-    QPalette pal = palette();
-    pal.setColor( QPalette::Window, QColor( 0, 0, 0, 180 ) );
-    this->setPalette( pal );
-
-    setupUi();
+CardPreviewOverlay::CardPreviewOverlay( const std::string& question, const std::string& correct,
+                                        const std::vector<std::string>& wrong, QWidget* parent )
+    : QWidget( parent ) {
+    setupUi( question, correct, wrong );
 }
 
-void CardPreviewOverlay::setupUi() {
+void CardPreviewOverlay::setupUi( const std::string& question, const std::string& correct,
+                                  const std::vector<std::string>& wrong ) {
     QVBoxLayout* main_layout = new QVBoxLayout( this );
-    main_layout->setAlignment( Qt::AlignCenter );
-    main_layout->setContentsMargins( 20, 20, 20, 20 );
+    main_layout->setContentsMargins( 0, 0, 0, 0 );
 
     QFrame* content_frame = new QFrame( this );
-    content_frame->setObjectName( "preview_card" );
     content_frame->setStyleSheet(
-        "QFrame#preview_card { "
-        "   background-color: #252526; "
-        "   border: 1px solid #454545; "
-        "   border-radius: 8px; "
-        "   min-width: 450px; "
-        "   max-width: 650px; "
-        "}"
-        "QLabel { color: #f0f0f0; font-size: 15px; }"
+        "QFrame { background-color: #252526; border: 1px solid #454545; border-radius: 8px; "
+        "min-width: 450px; max-width: 650px; }"
+        "QLabel { color: #f0f0f0; font-size: 15px; border: none; }"
         "QLabel#header { color: #888888; font-size: 11px; font-weight: bold; margin-top: 12px; "
         "margin-bottom: 4px; }"
         "QLabel#correct { color: #81c784; font-weight: bold; }"
@@ -61,7 +50,7 @@ void CardPreviewOverlay::setupUi() {
         "QPushButton { background-color: transparent; color: #cccccc; border: none; font-size: "
         "14px; border-radius: 4px; }"
         "QPushButton:hover { background-color: #c42b1c; color: white; }" );
-    connect( btn_close, &QPushButton::clicked, this, &QWidget::hide );
+    connect( btn_close, &QPushButton::clicked, this, &CardPreviewOverlay::closeClicked );
 
     top_layout->addWidget( title );
     top_layout->addStretch();
@@ -69,67 +58,43 @@ void CardPreviewOverlay::setupUi() {
     card_layout->addWidget( top_bar );
 
     QWidget* body = new QWidget( content_frame );
+    body->setStyleSheet( "border: none;" );
     QVBoxLayout* body_layout = new QVBoxLayout( body );
     body_layout->setContentsMargins( 20, 10, 20, 10 );
     body_layout->setSpacing( 10 );
 
-    body_layout->addWidget( new QLabel( "PYTANIE", body ) );
-    lbl_question_ = new QLabel( "", body );
-    lbl_question_->setWordWrap( true );
-    lbl_question_->setStyleSheet(
+    QLabel* lbl_q_header = new QLabel( "PYTANIE", body );
+    lbl_q_header->setObjectName( "header" );
+    body_layout->addWidget( lbl_q_header );
+
+    QLabel* lbl_question = new QLabel( QString::fromStdString( question ), body );
+    lbl_question->setWordWrap( true );
+    lbl_question->setStyleSheet(
         "font-size: 18px; font-weight: bold; color: white; margin-bottom: 5px;" );
-    body_layout->addWidget( lbl_question_ );
+    body_layout->addWidget( lbl_question );
 
-    body_layout->addWidget( new QLabel( "POPRAWNA ODPOWIEDŹ", body ) );
-    lbl_correct_ = new QLabel( "", body );
-    lbl_correct_->setObjectName( "correct" );
-    lbl_correct_->setWordWrap( true );
-    body_layout->addWidget( lbl_correct_ );
+    QLabel* lbl_a_header = new QLabel( "POPRAWNA ODPOWIEDŹ", body );
+    lbl_a_header->setObjectName( "header" );
+    body_layout->addWidget( lbl_a_header );
 
-    lbl_wrong_header_ = new QLabel( "BŁĘDNE ODPOWIEDZI", body );
-    lbl_wrong_header_->setObjectName( "header" );
-    body_layout->addWidget( lbl_wrong_header_ );
+    QLabel* lbl_correct = new QLabel( "✔  " + QString::fromStdString( correct ), body );
+    lbl_correct->setObjectName( "correct" );
+    lbl_correct->setWordWrap( true );
+    body_layout->addWidget( lbl_correct );
 
-    wrong_container_ = new QFrame( body );
-    wrong_layout_ = new QVBoxLayout( wrong_container_ );
-    wrong_layout_->setContentsMargins( 0, 0, 0, 0 );
-    wrong_layout_->setSpacing( 5 );
-    body_layout->addWidget( wrong_container_ );
+    if ( !wrong.empty() ) {
+        QLabel* lbl_w_header = new QLabel( "BŁĘDNE ODPOWIEDZI", body );
+        lbl_w_header->setObjectName( "header" );
+        body_layout->addWidget( lbl_w_header );
 
-    card_layout->addWidget( body );
-    main_layout->addWidget( content_frame );
-}
-
-void CardPreviewOverlay::showCard( const std::string& question, const std::string& correct,
-                                   const std::vector<std::string>& wrong ) {
-    lbl_question_->setText( QString::fromStdString( question ) );
-    lbl_correct_->setText( "✔  " + QString::fromStdString( correct ) );
-
-    QLayoutItem* item;
-    while ( ( item = wrong_layout_->takeAt( 0 ) ) != nullptr ) {
-        delete item->widget();
-        delete item;
-    }
-
-    if ( wrong.empty() ) {
-        lbl_wrong_header_->hide();
-        wrong_container_->hide();
-    } else {
-        lbl_wrong_header_->show();
-        wrong_container_->show();
         for ( const auto& w : wrong ) {
-            QLabel* lbl = new QLabel( "✘  " + QString::fromStdString( w ), wrong_container_ );
-            lbl->setObjectName( "wrong" );
-            lbl->setWordWrap( true );
-            wrong_layout_->addWidget( lbl );
+            QLabel* lbl_wrong = new QLabel( "✘  " + QString::fromStdString( w ), body );
+            lbl_wrong->setObjectName( "wrong" );
+            lbl_wrong->setWordWrap( true );
+            body_layout->addWidget( lbl_wrong );
         }
     }
 
-    this->resize( parentWidget()->size() );
-    this->raise();
-    this->show();
-}
-
-void CardPreviewOverlay::mousePressEvent( QMouseEvent* event ) {
-    // block clicks to underlying widgets
+    card_layout->addWidget( body );
+    main_layout->addWidget( content_frame );
 }

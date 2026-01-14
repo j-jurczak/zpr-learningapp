@@ -3,149 +3,142 @@
  * summary: View for creating new study sets - source file.
  */
 #include "AddSetView.h"
-#include <QVBoxLayout>
-#include <QHBoxLayout>
 #include <QLabel>
-#include <QPushButton>
 #include <QMessageBox>
-#include <QFile>
 #include <QScrollArea>
-#include <QResizeEvent>
+#include <QListWidgetItem>
+#include <QHBoxLayout>
+#include <QFormLayout>
+#include <QFile>
+#include <QDebug>
 
+#include "../overlays/OverlayContainer.h"
 #include "../overlays/CardPreviewOverlay.h"
 
 AddSetView::AddSetView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_( db ) {
+    overlay_container_ = std::make_unique<OverlayContainer>( this );
     setupUi();
 
-    overlay_ = new CardPreviewOverlay( this );
     setupStyles();
 }
 
 void AddSetView::resizeEvent( QResizeEvent* event ) {
     QWidget::resizeEvent( event );
-    if ( overlay_ ) {
-        overlay_->resize( this->size() );
+    if ( overlay_container_ ) {
+        overlay_container_->resize( this->size() );
+    }
+}
+
+void AddSetView::setupStyles() {
+    QFile file( ":/resources/AddSetView.qss" );
+
+    if ( file.open( QFile::ReadOnly ) ) {
+        this->setStyleSheet( QString::fromLatin1( file.readAll() ) );
+        file.close();
+    } else {
+        qDebug() << "BŁĄD: Nie można załadować pliku stylu :/resources/AddSetView.qss";
     }
 }
 
 void AddSetView::setupUi() {
     QVBoxLayout* main_layout = new QVBoxLayout( this );
-    main_layout->setContentsMargins( 0, 0, 0, 0 );
+    main_layout->setContentsMargins( 30, 30, 30, 30 );
+    main_layout->setSpacing( 20 );
 
-    QScrollArea* scroll_area = new QScrollArea( this );
-    scroll_area->setWidgetResizable( true );
-    scroll_area->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
-
-    QWidget* scroll_content = new QWidget();
-    scroll_content->setObjectName( "scroll_content" );
-
-    QVBoxLayout* content_layout = new QVBoxLayout( scroll_content );
-    content_layout->setContentsMargins( 30, 30, 30, 30 );
-    content_layout->setSpacing( 20 );
-
-    QLabel* header = new QLabel( "Tworzenie nowego zestawu", scroll_content );
+    QLabel* header = new QLabel( "Stwórz Nowy Zestaw", this );
     header->setObjectName( "header" );
-    content_layout->addWidget( header );
+    main_layout->addWidget( header );
 
-    content_layout->addWidget( new QLabel( "Nazwa zestawu:", scroll_content ) );
-    name_input_ = new QLineEdit( scroll_content );
-    name_input_->setPlaceholderText( "np. Język Niemiecki - Zwierzęta" );
-    content_layout->addWidget( name_input_ );
+    name_input_ = new QLineEdit( this );
+    name_input_->setPlaceholderText( "Nazwa zestawu (np. Angielski A1)" );
+    main_layout->addWidget( name_input_ );
 
-    content_layout->addWidget( new QLabel( "Dodane karty:", scroll_content ) );
-    preview_list_ = new QListWidget( scroll_content );
-    preview_list_->setObjectName( "preview_list" );
-    preview_list_->setMinimumHeight( 200 );
-    preview_list_->setMaximumHeight( 300 );
-    content_layout->addWidget( preview_list_ );
+    main_layout->addWidget( new QLabel( "Dodane karty:", this ) );
+    preview_list_ = new QListWidget( this );
+    preview_list_->setMinimumHeight( 150 );
+    main_layout->addWidget( preview_list_ );
 
-    QLabel* form_header = new QLabel( "Dodaj nowe pytanie", scroll_content );
-    form_header->setStyleSheet(
-        "font-size: 18px; font-weight: bold; margin-top: 20px; margin-bottom: 10px;" );
-    content_layout->addWidget( form_header );
+    QFrame* card_form_frame = new QFrame( this );
+    card_form_frame->setObjectName( "form_frame" );
+    QVBoxLayout* form_layout = new QVBoxLayout( card_form_frame );
+    form_layout->setContentsMargins( 20, 20, 20, 20 );
+    form_layout->setSpacing( 15 );
 
-    content_layout->addWidget( new QLabel( "Treść pytania:", scroll_content ) );
-    question_input_ = new QLineEdit( scroll_content );
-    question_input_->setPlaceholderText( "Wpisz pytanie..." );
-    content_layout->addWidget( question_input_ );
+    form_layout->addWidget( new QLabel( "Pytanie:", card_form_frame ) );
+    question_input_ = new QLineEdit( card_form_frame );
+    form_layout->addWidget( question_input_ );
 
-    content_layout->addWidget( new QLabel( "Poprawna odpowiedź:", scroll_content ) );
-    correct_input_ = new QLineEdit( scroll_content );
-    correct_input_->setPlaceholderText( "Wpisz poprawną odpowiedź..." );
-    correct_input_->setStyleSheet( "border: 1px solid #2e7d32;" );
-    content_layout->addWidget( correct_input_ );
+    form_layout->addWidget( new QLabel( "Poprawna odpowiedź:", card_form_frame ) );
+    correct_input_ = new QLineEdit( card_form_frame );
+    form_layout->addWidget( correct_input_ );
 
-    QHBoxLayout* wrong_header_layout = new QHBoxLayout();
-    wrong_header_layout->addWidget( new QLabel( "Błędne odpowiedzi (max 3):", scroll_content ) );
+    QHBoxLayout* wrong_header = new QHBoxLayout();
+    wrong_header->addWidget( new QLabel( "Błędne odpowiedzi (opcjonalne):", card_form_frame ) );
 
-    btn_add_wrong_ = new QPushButton( "+", scroll_content );
-    btn_add_wrong_->setObjectName( "btn_add_field" );
+    btn_add_wrong_ = new QPushButton( "+", card_form_frame );
+    btn_add_wrong_->setObjectName( "btn_add_wrong" );
     btn_add_wrong_->setFixedSize( 30, 30 );
+    btn_add_wrong_->setCursor( Qt::PointingHandCursor );
+    connect( btn_add_wrong_, &QPushButton::clicked, this, &AddSetView::addWrongAnswerField );
 
-    wrong_header_layout->addWidget( btn_add_wrong_ );
-    wrong_header_layout->addStretch();
-
-    content_layout->addLayout( wrong_header_layout );
+    wrong_header->addWidget( btn_add_wrong_ );
+    form_layout->addLayout( wrong_header );
 
     wrong_answers_layout_ = new QVBoxLayout();
-    wrong_answers_layout_->setSpacing( 10 );
-    content_layout->addLayout( wrong_answers_layout_ );
+    form_layout->addLayout( wrong_answers_layout_ );
 
     addWrongAnswerField();
 
-    QPushButton* btn_add_card = new QPushButton( "Zatwierdź kartę", scroll_content );
-    btn_add_card->setObjectName( "btn_add" );
-
-    content_layout->addSpacing( 10 );
-    content_layout->addWidget( btn_add_card );
-
-    content_layout->addStretch();
-
-    QHBoxLayout* btn_layout = new QHBoxLayout();
-    QPushButton* btn_cancel = new QPushButton( "Anuluj", scroll_content );
-    btn_cancel->setObjectName( "btn_cancel" );
-
-    QPushButton* btn_save = new QPushButton( "Zapisz Cały Zestaw", scroll_content );
-    btn_save->setObjectName( "btn_save" );
-
-    btn_layout->addWidget( btn_cancel );
-    btn_layout->addStretch();
-    btn_layout->addWidget( btn_save );
-    content_layout->addLayout( btn_layout );
-
-    scroll_area->setWidget( scroll_content );
-    main_layout->addWidget( scroll_area );
-
-    connect( btn_add_wrong_, &QPushButton::clicked, this, &AddSetView::addWrongAnswerField );
+    QPushButton* btn_add_card = new QPushButton( "Dodaj kartę", card_form_frame );
+    btn_add_card->setObjectName( "btn_add_card" );
+    btn_add_card->setCursor( Qt::PointingHandCursor );
     connect( btn_add_card, &QPushButton::clicked, this, &AddSetView::addCardToDraft );
-    connect( btn_save, &QPushButton::clicked, this, &AddSetView::saveSet );
-    connect( btn_cancel, &QPushButton::clicked, this, &AddSetView::creationCancelledClicked );
-}
 
-void AddSetView::setupStyles() {
-    QFile file( ":/resources/AddSetView.qss" );
-    if ( file.open( QFile::ReadOnly ) ) {
-        this->setStyleSheet( QString::fromLatin1( file.readAll() ) );
-        file.close();
-    }
+    form_layout->addWidget( btn_add_card );
+    main_layout->addWidget( card_form_frame );
+
+    QHBoxLayout* bottom_btns = new QHBoxLayout();
+    bottom_btns->addStretch();
+
+    QPushButton* btn_cancel = new QPushButton( "Anuluj", this );
+    btn_cancel->setObjectName( "btn_cancel" );
+    btn_cancel->setCursor( Qt::PointingHandCursor );
+    connect( btn_cancel, &QPushButton::clicked, this, &AddSetView::creationCancelledClicked );
+
+    QPushButton* btn_save = new QPushButton( "Stwórz Zestaw", this );
+    btn_save->setObjectName( "btn_save" );
+    btn_save->setCursor( Qt::PointingHandCursor );
+    connect( btn_save, &QPushButton::clicked, this, &AddSetView::saveSet );
+
+    bottom_btns->addWidget( btn_cancel );
+    bottom_btns->addWidget( btn_save );
+
+    main_layout->addLayout( bottom_btns );
 }
 
 void AddSetView::addWrongAnswerField() {
-    if ( wrong_inputs_.size() >= 3 ) {
-        return;
+    if ( wrong_inputs_.size() >= 3 ) return;
+
+    QLineEdit* input = new QLineEdit( this );
+    input->setPlaceholderText( "Błędna odpowiedź..." );
+    wrong_answers_layout_->addWidget( input );
+    wrong_inputs_.push_back( input );
+
+    if ( wrong_inputs_.size() >= 3 ) btn_add_wrong_->setEnabled( false );
+}
+
+void AddSetView::resetCardForm() {
+    question_input_->clear();
+    correct_input_->clear();
+
+    QLayoutItem* item;
+    while ( ( item = wrong_answers_layout_->takeAt( 0 ) ) != nullptr ) {
+        delete item->widget();
+        delete item;
     }
-
-    QLineEdit* wrong_input = new QLineEdit();
-    wrong_input->setPlaceholderText( "Błędna odpowiedź..." );
-
-    wrong_answers_layout_->addWidget( wrong_input );
-    wrong_inputs_.push_back( wrong_input );
-    wrong_input->setFocus();
-
-    if ( wrong_inputs_.size() >= 3 ) {
-        btn_add_wrong_->setEnabled( false );
-        btn_add_wrong_->setToolTip( "Osiągnięto limit 3 błędnych odpowiedzi" );
-    }
+    wrong_inputs_.clear();
+    btn_add_wrong_->setEnabled( true );
+    addWrongAnswerField();
 }
 
 void AddSetView::addCardToDraft() {
@@ -153,77 +146,48 @@ void AddSetView::addCardToDraft() {
     QString correct = correct_input_->text().trimmed();
 
     if ( q.isEmpty() || correct.isEmpty() ) {
-        QMessageBox::warning( this, "Błąd", "Pytanie i poprawna odpowiedź są wymagane!" );
+        QMessageBox::warning( this, "Błąd", "Pytanie i odpowiedź są wymagane!" );
         return;
     }
 
     std::vector<std::string> wrong_answers_vec;
     for ( QLineEdit* input : wrong_inputs_ ) {
-        QString wrong = input->text().trimmed();
-        if ( !wrong.isEmpty() ) {
-            wrong_answers_vec.push_back( wrong.toStdString() );
+        if ( !input->text().trimmed().isEmpty() ) {
+            wrong_answers_vec.push_back( input->text().trimmed().toStdString() );
         }
     }
 
-    DraftCard draft;
-    draft.question = q.toStdString();
-    draft.correct_answer = correct.toStdString();
-    draft.wrong_answers = wrong_answers_vec;
-    draft_cards_.push_back( draft );
+    draft_cards_.push_back( { q.toStdString(), correct.toStdString(), wrong_answers_vec } );
 
     QListWidgetItem* item = new QListWidgetItem( preview_list_ );
     item->setSizeHint( QSize( 0, 50 ) );
 
     QWidget* row_widget = new QWidget();
     QHBoxLayout* row_layout = new QHBoxLayout( row_widget );
-    row_layout->setContentsMargins( 0, 0, 0, 0 );
-    row_layout->setSpacing( 0 );
+    row_layout->setContentsMargins( 10, 0, 10, 0 );
 
-    QString label_text = q + ( wrong_answers_vec.empty() ? "" : " [Test]" );
+    QLabel* lbl_text = new QLabel( q, row_widget );
+    lbl_text->setStyleSheet( "color: white; font-size: 14px;" );
+    row_layout->addWidget( lbl_text );
+    row_layout->addStretch();
 
-    QPushButton* btn_content = new QPushButton( label_text, row_widget );
-    btn_content->setObjectName( "btn_preview_item" );
-    btn_content->setCursor( Qt::PointingHandCursor );
-    btn_content->setToolTip( "Kliknij, aby zobaczyć podgląd" );
-    btn_content->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+    QPushButton* btn_preview = new QPushButton( "Podgląd", row_widget );
+    btn_preview->setObjectName( "btn_preview" );
+    btn_preview->setCursor( Qt::PointingHandCursor );
 
-    QPushButton* btn_delete = new QPushButton( "X", row_widget );
-    btn_delete->setObjectName( "btn_delete_item" );
-    btn_delete->setFixedSize( 40, 50 );
-    btn_delete->setCursor( Qt::PointingHandCursor );
+    connect( btn_preview, &QPushButton::clicked, this, [this, q, correct, wrong_answers_vec]() {
+        current_preview_ = std::make_unique<CardPreviewOverlay>(
+            q.toStdString(), correct.toStdString(), wrong_answers_vec );
+        auto* preview_ptr = static_cast<CardPreviewOverlay*>( current_preview_.get() );
+        connect( preview_ptr, &CardPreviewOverlay::closeClicked, overlay_container_.get(),
+                 &OverlayContainer::clearContent );
+        overlay_container_->setContent( current_preview_.get() );
+    } );
 
-    row_layout->addWidget( btn_content );
-    row_layout->addWidget( btn_delete );
-
+    row_layout->addWidget( btn_preview );
     preview_list_->setItemWidget( item, row_widget );
 
-    connect( btn_content, &QPushButton::clicked, this, [this, q, correct, wrong_answers_vec]() {
-        overlay_->showCard( q.toStdString(), correct.toStdString(), wrong_answers_vec );
-    } );
-
-    connect( btn_delete, &QPushButton::clicked, this, [this, item]() {
-        int row = preview_list_->row( item );
-        if ( row < 0 || row >= static_cast<int>( draft_cards_.size() ) ) return;
-        draft_cards_.erase( draft_cards_.begin() + row );
-        delete item;
-    } );
-
     resetCardForm();
-}
-
-void AddSetView::resetCardForm() {
-    question_input_->clear();
-    correct_input_->clear();
-
-    qDeleteAll( wrong_inputs_ );
-    wrong_inputs_.clear();
-
-    addWrongAnswerField();
-
-    btn_add_wrong_->setEnabled( true );
-    btn_add_wrong_->setToolTip( "Dodaj kolejne pole na błędną odpowiedź" );
-
-    question_input_->setFocus();
 }
 
 void AddSetView::saveSet() {
@@ -234,7 +198,7 @@ void AddSetView::saveSet() {
         return;
     }
     if ( draft_cards_.empty() ) {
-        QMessageBox::warning( this, "Błąd", "Zestaw musi mieć przynajmniej jedną kartę!" );
+        QMessageBox::warning( this, "Błąd", "Zestaw musi zawierać przynajmniej jedną kartę!" );
         return;
     }
 
@@ -243,9 +207,10 @@ void AddSetView::saveSet() {
         preview_list_->clear();
         draft_cards_.clear();
         resetCardForm();
+
         emit setCreated();
     } else {
-        QMessageBox::critical( this, "Błąd", "Nie udało się zapisać zestawu w bazie." );
+        QMessageBox::critical( this, "Błąd", "Nie udało się zapisać zestawu w bazie danych." );
     }
 }
 

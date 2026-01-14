@@ -32,6 +32,9 @@ public:
     std::vector<Card> getCardsForSet( int set_id );
 
     bool createSet( const std::string& set_name, const std::vector<DraftCard>& cards );
+    bool deleteSet( int set_id );
+    bool addCardToSet( int set_id, const DraftCard& card );
+    bool deleteCard( int card_id );
 
 private:
     QSqlDatabase database_;
