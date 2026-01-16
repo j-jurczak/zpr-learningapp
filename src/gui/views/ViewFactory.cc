@@ -8,6 +8,7 @@
 #include "SettingsView.h"
 #include "SetView.h"
 #include "AddSetView.h"
+#include "LearningView.h"
 
 ViewFactory::ViewFactory( DatabaseManager& db ) : db_( db ) {}
 
@@ -31,6 +32,9 @@ QWidget* ViewFactory::create( ViewType type, QVariant data, QWidget* parent ) {
 
         case ViewType::ADD_SET:
             return new AddSetView( db_, parent );
+
+        case ViewType::LEARNING:
+            return new LearningView( db_, parent );
 
         default:
             return new QWidget( parent );

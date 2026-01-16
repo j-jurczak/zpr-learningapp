@@ -7,7 +7,6 @@
 #include <QListWidgetItem>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
-#include "SetsView.h"
 #include <QPushButton>
 #include <QDebug>
 #include <QShowEvent>
@@ -16,7 +15,10 @@
 #include <QDir>
 #include <QApplication>
 
+#include "SetsView.h"
 #include "../../core/utils/SetImporter.h"
+
+using namespace std;
 
 SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     QVBoxLayout* layout = new QVBoxLayout( this );
@@ -96,7 +98,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
 
 void SetsView::refreshSetsList() {
     list_widget_->clear();
-    std::vector<StudySet> sets = db_manager_.getAllSets();
+    vector<StudySet> sets = db_manager_.getAllSets();
 
     if ( sets.empty() ) {
         QListWidgetItem* item = new QListWidgetItem( "Brak zestawów. Kliknij '+', aby dodać." );

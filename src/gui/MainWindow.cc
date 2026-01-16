@@ -16,6 +16,7 @@
 #include "views/SetView.h"
 #include "views/AddSetView.h"
 #include "views/HomeView.h"
+#include "views/LearningView.h"
 
 MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     : QMainWindow( parent ), factory_( factory ) {
@@ -79,8 +80,6 @@ void MainWindow::setupConnections() {
 
     // sets view logic
     if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
-        // qDebug() << "MainWindow: SetsView identified.";
-
         connect( sets_view_ptr, &SetsView::setClicked, this, [this]( int set_id ) {
             QWidget* detail_view = factory_.create( ViewType::SET_VIEW, set_id, this );
 
@@ -93,11 +92,41 @@ void MainWindow::setupConnections() {
                     main_stack_->removeWidget( detail_view );
                     detail_view->deleteLater();
                 } );
+
+                // LearningView start
+                connect(
+                    detail_ptr, &SetView::learnClicked, this,
+                    [this, detail_view]( int id, LearningMode mode ) {
+                        QWidget* learning_widget = factory_.create( ViewType::LEARNING, {}, this );
+
+                        if ( auto* learning_ptr = qobject_cast<LearningView*>( learning_widget ) ) {
+                            main_stack_->addWidget( learning_widget );
+                            main_stack_->setCurrentWidget( learning_widget );
+                            learning_ptr->startSession( id, mode );
+
+                            connect(
+                                learning_ptr, &LearningView::sessionFinished, this,
+                                [this, learning_widget]() {
+                                    if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
+                                        sets_ptr->refreshSetsList();
+                                    }
+                                    main_stack_->setCurrentWidget( sets_view_ );
+                                    main_stack_->removeWidget( learning_widget );
+                                    learning_widget->deleteLater();
+                                } );
+
+                            main_stack_->removeWidget( detail_view );
+                            detail_view->deleteLater();
+
+                        } else {
+                            qCritical() << "MainWindow error: could not create LearningView!";
+                        }
+                    } );
             }
         } );
-        connect( sets_view_ptr, &SetsView::newSetClicked, this, [this, sets_view_ptr]() {
-            // qDebug() << "MainWindow: received signal: newSetClicked";
 
+        // new set button
+        connect( sets_view_ptr, &SetsView::newSetClicked, this, [this, sets_view_ptr]() {
             QWidget* add_view = factory_.create( ViewType::ADD_SET, {}, this );
 
             main_stack_->addWidget( add_view );
@@ -111,20 +140,16 @@ void MainWindow::setupConnections() {
                 } );
 
                 connect( add_ptr, &AddSetView::setCreated, this, [this, add_view, sets_view_ptr]() {
-                    qDebug() << "MainWindow: Zestaw utworzony - odświeżam listę.";
-
+                    qDebug() << "MainWindow: Set created - refreshing list.";
                     sets_view_ptr->refreshSetsList();
-
                     main_stack_->setCurrentWidget( sets_view_ );
                     main_stack_->removeWidget( add_view );
                     add_view->deleteLater();
                 } );
-
-            } else {
-                qCritical() << "MainWindow BŁĄD: Nie udało się rzutować na AddSetView!";
             }
         } );
     }
+
     // home view logic
     if ( auto* home_ptr = qobject_cast<HomeView*>( home_view_ ) ) {
         connect( home_ptr, &HomeView::newSetClicked, this, [this]() {
@@ -144,7 +169,6 @@ void MainWindow::setupConnections() {
                     if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
                         sets_ptr->refreshSetsList();
                     }
-
                     main_stack_->setCurrentWidget( sets_view_ );
                     main_stack_->removeWidget( add_view );
                     add_view->deleteLater();
@@ -152,7 +176,7 @@ void MainWindow::setupConnections() {
             }
         } );
     } else {
-        qCritical() << "MainWindow BŁĄD KRYTYCZNY: sets_view_ nie jest typu SetsView!";
+        qCritical() << "MainWindow type error: sets_view_ is not a SetsView!";
     }
 }
 

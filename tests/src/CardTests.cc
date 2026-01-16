@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 #include <algorithm>
-#include "../../src/core/Card.h"
+#include "../../src/core/learning/Card.h"
 
 using namespace std;
 

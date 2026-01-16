@@ -5,6 +5,7 @@
 #pragma once
 #include <QString>
 #include <memory>
+
 #include "../../db/DatabaseManager.h"
 
 class SetImporter {

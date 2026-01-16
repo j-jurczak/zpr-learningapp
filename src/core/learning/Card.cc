@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cctype>
 #include <random>
+
 #include "Card.h"
 
 using namespace std;
@@ -25,8 +26,8 @@ bool Card::areStringsEqual( string_view a, string_view b ) {
     } );
 }
 
-bool Card::checkAnswer( std::string_view user_answer ) const {
-    return std::visit(
+bool Card::checkAnswer( string_view user_answer ) const {
+    return visit(
         [&]( const auto& concrete_data ) {
             return areStringsEqual( user_answer, concrete_data.correct_answer );
         },
@@ -41,9 +42,9 @@ vector<string> Card::getChoices() const {
         vector<string> all = choice->wrong_answers;
         all.push_back( choice->correct_answer );
 
-        random_device rd;
-        default_random_engine rng( rd() );
-        shuffle( all.begin(), all.end(), rng );  // randomize order
+        static random_device rd;
+        static default_random_engine rng( rd() );
+        shuffle( all.begin(), all.end(), rng );
 
         return all;
     }

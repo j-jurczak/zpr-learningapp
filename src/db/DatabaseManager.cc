@@ -10,10 +10,11 @@
 #include <QVariant>
 #include <QCoreApplication>
 #include <QDir>
+#include <QDate>
 
 using namespace std;
 
-DatabaseManager::DatabaseManager() {}
+DatabaseManager::DatabaseManager( const QString& db_name ) : db_name_( db_name ) {}
 
 DatabaseManager::~DatabaseManager() {
     if ( database_.isOpen() ) {
@@ -23,22 +24,36 @@ DatabaseManager::~DatabaseManager() {
 
 // establishes connection to the SQLite database
 bool DatabaseManager::connect() {
-    QDir dir( QCoreApplication::applicationDirPath() );
-    dir.cdUp();
-    dir.cdUp();
-    QString db_path = dir.absolutePath() + "/data/learning_app.db";
+    if ( QSqlDatabase::contains( QSqlDatabase::defaultConnection ) ) {
+        database_ = QSqlDatabase::database( QSqlDatabase::defaultConnection );
+    } else {
+        database_ = QSqlDatabase::addDatabase( "QSQLITE" );
+    }
+    QString dbPath;
 
-    database_ = QSqlDatabase::addDatabase( "QSQLITE" );
-    database_.setDatabaseName( db_path );
+#ifdef PROJECT_ROOT
+    QString root = QString( PROJECT_ROOT );
+    QString dataDir = root + "/data";
+    QDir dir( dataDir );
+    if ( !dir.exists() ) {
+        if ( dir.mkpath( "." ) ) {
+            qDebug() << "Directory created";
+        } else {
+            qCritical() << "Error: Could not create directory";
+        }
+    }
+    dbPath = dataDir + "/" + db_name_;
+#else
+    dbPath = db_name_;
+#endif
 
+    qDebug() << "Database path:" << dbPath;
+    database_.setDatabaseName( dbPath );
     if ( !database_.open() ) {
-        qCritical() << "Error opening database:" << database_.lastError().text();
+        qCritical() << "Error: connection with database failed:" << database_.lastError().text();
         return false;
     }
-    QSqlQuery q;
-    q.exec( "PRAGMA foreign_keys = ON;" );
-
-    return createTables();
+    return true;
 }
 
 // creates necessary tables if they do not exist
@@ -154,7 +169,7 @@ optional<StudySet> DatabaseManager::getSet( int set_id ) {
         s.name = query.value( "name" ).toString().toStdString();
         return s;
     }
-    return std::nullopt;
+    return nullopt;
 }
 
 // select query for all cards in a given set
@@ -189,8 +204,7 @@ vector<Card> DatabaseManager::getCardsForSet( int set_id ) {
 }
 
 // insert query to create a new set with its cards
-bool DatabaseManager::createSet( const std::string& set_name,
-                                 const std::vector<DraftCard>& cards ) {
+bool DatabaseManager::createSet( const string& set_name, const vector<DraftCard>& cards ) {
     if ( set_name.empty() ) return false;
 
     database_.transaction();
@@ -200,7 +214,7 @@ bool DatabaseManager::createSet( const std::string& set_name,
     query.bindValue( ":name", QString::fromStdString( set_name ) );
 
     if ( !query.exec() ) {
-        qCritical() << "Nie udalo sie dodac zestawu:" << query.lastError().text();
+        qCritical() << "Could not add set:" << query.lastError().text();
         database_.rollback();
         return false;
     }
@@ -234,7 +248,7 @@ bool DatabaseManager::createSet( const std::string& set_name,
         query.bindValue( ":type", answer_type );
 
         if ( !query.exec() ) {
-            qCritical() << "Nie udalo sie dodac karty:" << query.lastError().text();
+            qCritical() << "Could not add card:" << query.lastError().text();
             database_.rollback();
             return false;
         }
@@ -250,8 +264,8 @@ bool DatabaseManager::deleteSet( int set_id ) {
     query.bindValue( ":id", set_id );
 
     if ( !query.exec() ) {
-        qCritical() << "Nie udało się usunąć zestawu ID:" << set_id
-                    << " Błąd:" << query.lastError().text();
+        qCritical() << "Could not delete set ID:" << set_id
+                    << " Error:" << query.lastError().text();
         return false;
     }
 
@@ -285,7 +299,7 @@ bool DatabaseManager::addCardToSet( int set_id, const DraftCard& card ) {
     query.bindValue( ":type", answer_type );
 
     if ( !query.exec() ) {
-        qCritical() << "Błąd dodawania pojedynczej karty:" << query.lastError().text();
+        qCritical() << "Error adding single card:" << query.lastError().text();
         return false;
     }
 
@@ -299,10 +313,106 @@ bool DatabaseManager::deleteCard( int card_id ) {
     query.bindValue( ":id", card_id );
 
     if ( !query.exec() ) {
-        qCritical() << "Nie udało się usunąć karty ID:" << card_id
-                    << " Błąd:" << query.lastError().text();
+        qCritical() << "Could not delete card ID:" << card_id
+                    << " Error:" << query.lastError().text();
         return false;
     }
 
     return true;
+}
+
+// retrieves cards due for review for a specific set
+vector<Card> DatabaseManager::getRandomCards( int set_id, int limit ) {
+    return getCardsWithQuery(
+        "SELECT * FROM cards WHERE set_id = :id ORDER BY RANDOM() LIMIT :limit", set_id, limit );
+}
+
+// retrieves cards due for review for a specific set
+vector<Card> DatabaseManager::getDueCards( int set_id, int limit ) {
+    QString sql = R"(
+        SELECT c.* FROM cards c
+        LEFT JOIN learning_progress lp ON c.id = lp.card_id
+        WHERE c.set_id = :id
+          AND (lp.next_review_date IS NULL OR lp.next_review_date <= date('now', 'localtime'))
+        ORDER BY lp.next_review_date ASC
+        LIMIT :limit
+    )";
+    return getCardsWithQuery( sql, set_id, limit );
+}
+
+// helper method to execute card retrieval queries
+vector<Card> DatabaseManager::getCardsWithQuery( const QString& sql, int set_id, int limit ) {
+    vector<Card> cards;
+    QSqlQuery query;
+    query.prepare( sql );
+    query.bindValue( ":id", set_id );
+    query.bindValue( ":limit", limit );
+
+    if ( query.exec() ) {
+        while ( query.next() ) {
+            int id = query.value( 0 ).toInt();
+            int sid = query.value( 1 ).toInt();
+            string q = query.value( 2 ).toString().toStdString();
+            string a = query.value( 3 ).toString().toStdString();
+            QString w_str = query.value( 4 ).toString();
+            int media = query.value( 5 ).toInt();
+            int type = query.value( 6 ).toInt();
+
+            CardData data;
+            if ( type == 1 ) {
+                vector<string> wrongs;
+                if ( !w_str.isEmpty() ) {
+                    for ( const auto& part : w_str.split( ';' ) ) {
+                        if ( !part.isEmpty() ) wrongs.push_back( part.toStdString() );
+                    }
+                }
+                data = ChoiceData{ a, wrongs };
+            } else {
+                data = StandardData{ a };
+            }
+            cards.emplace_back( id, sid, q, data, static_cast<MediaType>( media ) );
+        }
+    }
+    return cards;
+}
+
+// retrieves learning progress for a specific card
+tuple<int, int, float> DatabaseManager::getCardProgress( int card_id ) {
+    QSqlQuery query;
+    query.prepare(
+        "SELECT interval, repetitions, easiness_factor FROM learning_progress WHERE card_id = "
+        ":id" );
+    query.bindValue( ":id", card_id );
+
+    if ( query.exec() && query.next() ) {
+        return { query.value( 0 ).toInt(), query.value( 1 ).toInt(), query.value( 2 ).toFloat() };
+    }
+    return { 0, 0, 2.5f };
+}
+
+// updates learning progress for a specific card
+bool DatabaseManager::updateCardProgress( int card_id, int interval, int repetitions,
+                                          float easiness, const string& next_date ) {
+    QSqlQuery query;
+    query.prepare( R"(
+        INSERT OR REPLACE INTO learning_progress (card_id, interval, repetitions, easiness_factor, next_review_date)
+        VALUES (:id, :iv, :rep, :ef, :date)
+    )" );
+
+    query.bindValue( ":id", card_id );
+    query.bindValue( ":iv", interval );
+    query.bindValue( ":rep", repetitions );
+    query.bindValue( ":ef", easiness );
+    query.bindValue( ":date", QString::fromStdString( next_date ) );
+
+    if ( !query.exec() ) {
+        qCritical() << "Error saving progress:" << query.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+// calculates the next review date based on the current date and a given offset
+string DatabaseManager::calculateNextDate( int days_from_now ) {
+    return QDate::currentDate().addDays( days_from_now ).toString( "yyyy-MM-dd" ).toStdString();
 }
