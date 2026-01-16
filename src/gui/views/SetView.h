@@ -8,8 +8,10 @@
 #include <vector>
 #include <QLabel>
 #include <memory>
+
 #include "../../db/DatabaseManager.h"
-#include "../../core/Card.h"
+#include "../../core/learning/Card.h"
+#include "../../core/learning/LearningSession.h"
 
 class OverlayContainer;
 class AddCardOverlay;
@@ -21,7 +23,7 @@ public:
 
 signals:
     void backToSetsClicked();
-    void learnClicked( int set_id );
+    void learnClicked( int set_id, LearningMode mode );
 
 protected:
     void resizeEvent( QResizeEvent* event ) override;
@@ -32,11 +34,11 @@ private:
 
     int set_id_;
     DatabaseManager& db_;
-    QListWidget* cards_list_;
+
     QLabel* title_label_;
+    QListWidget* cards_list_;
 
     std::unique_ptr<OverlayContainer> overlay_container_;
-
     std::unique_ptr<AddCardOverlay> add_overlay_;
     std::unique_ptr<QWidget> current_preview_;
 

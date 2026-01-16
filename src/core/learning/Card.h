@@ -7,6 +7,7 @@
 #include <string_view>
 #include <variant>
 #include <vector>
+
 #include "CardTypes.h"
 
 struct StandardData {
@@ -34,6 +35,7 @@ public:
 
     int getId() const { return id_; }
     const std::string& getQuestion() const { return question_; }
+    const CardData& getData() const { return data_; }
     MediaType getMediaType() const { return media_type_; }
 
     bool isChoiceCard() const;

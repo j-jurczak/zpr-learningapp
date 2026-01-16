@@ -2,17 +2,20 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Implementation of JSON parsing logic to import study sets from files.
  */
-#include "JsonImportStrategy.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 
+#include "JsonImportStrategy.h"
+
+using namespace std;
+
 bool JsonImportStrategy::import( const QString& filepath, DatabaseManager& db,
                                  QString& error_msg ) {
     QFile file( filepath );
     if ( !file.open( QIODevice::ReadOnly ) ) {
-        error_msg = "Nie można otworzyć pliku: " + filepath;
+        error_msg = "Cannot open file: " + filepath;
         return false;
     }
 
@@ -23,29 +26,29 @@ bool JsonImportStrategy::import( const QString& filepath, DatabaseManager& db,
     QJsonDocument doc = QJsonDocument::fromJson( data, &parse_err );
 
     if ( parse_err.error != QJsonParseError::NoError ) {
-        error_msg = "Błąd parsowania JSON: " + parse_err.errorString();
+        error_msg = "Error parsing JSON: " + parse_err.errorString();
         return false;
     }
 
     if ( !doc.isObject() ) {
-        error_msg = "JSON musi być obiektem.";
+        error_msg = "JSON must be an object.";
         return false;
     }
 
     QJsonObject root = doc.object();
 
     if ( !root.contains( "name" ) || !root["name"].isString() ) {
-        error_msg = "Brak pola 'name'.";
+        error_msg = "Missing field 'name'.";
         return false;
     }
-    std::string set_name = root["name"].toString().toStdString();
+    string set_name = root["name"].toString().toStdString();
 
     if ( !root.contains( "cards" ) || !root["cards"].isArray() ) {
-        error_msg = "Brak pola 'cards'.";
+        error_msg = "Missing field 'cards'.";
         return false;
     }
 
-    std::vector<DraftCard> cards_to_import;
+    vector<DraftCard> cards_to_import;
     QJsonArray cards_array = root["cards"].toArray();
 
     for ( const auto& val : cards_array ) {
@@ -54,10 +57,10 @@ bool JsonImportStrategy::import( const QString& filepath, DatabaseManager& db,
 
         if ( !card_obj.contains( "question" ) || !card_obj.contains( "correct" ) ) continue;
 
-        std::string q = card_obj["question"].toString().toStdString();
-        std::string c = card_obj["correct"].toString().toStdString();
+        string q = card_obj["question"].toString().toStdString();
+        string c = card_obj["correct"].toString().toStdString();
 
-        std::vector<std::string> wrongs;
+        vector<string> wrongs;
         if ( card_obj.contains( "wrong" ) && card_obj["wrong"].isArray() ) {
             QJsonArray wrong_arr = card_obj["wrong"].toArray();
             for ( const auto& w : wrong_arr ) {
@@ -68,12 +71,12 @@ bool JsonImportStrategy::import( const QString& filepath, DatabaseManager& db,
     }
 
     if ( cards_to_import.empty() ) {
-        error_msg = "Brak poprawnych kart do zaimportowania.";
+        error_msg = "No valid cards to import.";
         return false;
     }
 
     if ( !db.createSet( set_name, cards_to_import ) ) {
-        error_msg = "Błąd bazy danych.";
+        error_msg = "Database error.";
         return false;
     }
 

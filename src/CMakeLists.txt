@@ -1,12 +1,16 @@
 
 add_library(CoreLib STATIC
-# core files
-    core/Card.cc
-    core/Card.h
-    core/CardTypes.h
-    core/LearningSession.cc
-    core/LearningSession.h
-    core/StudySet.h
+    # core files
+    core/learning/Card.cc
+    core/learning/Card.h
+    core/learning/CardTypes.h
+    core/learning/LearningSession.cc
+    core/learning/LearningSession.h
+    core/learning/StudySet.h
+    core/learning/strategies/ICardSelectionStrategy.h
+    core/learning/strategies/SelectionStrategies.h
+    core/learning/SuperMemo.cc
+    core/learning/SuperMemo.h
     core/utils/SetImporter.cc
     core/utils/SetImporter.h
     core/utils/importers/IImportStrategy.h
@@ -24,8 +28,8 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON) # automatic file generation for Qt resources
 
+# gui files
 add_library(GuiLib STATIC
-    # gui files
     gui/MainWindow.cc
     gui/MainWindow.h
     
@@ -42,6 +46,8 @@ add_library(GuiLib STATIC
     gui/views/SetView.h
     gui/views/AddSetView.cc
     gui/views/AddSetView.h
+    gui/views/LearningView.cc
+    gui/views/LearningView.h
 
     gui/overlays/CardPreviewOverlay.h
     gui/overlays/CardPreviewOverlay.cc

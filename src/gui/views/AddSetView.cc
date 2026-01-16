@@ -15,8 +15,10 @@
 #include "../overlays/OverlayContainer.h"
 #include "../overlays/CardPreviewOverlay.h"
 
+using namespace std;
+
 AddSetView::AddSetView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_( db ) {
-    overlay_container_ = std::make_unique<OverlayContainer>( this );
+    overlay_container_ = make_unique<OverlayContainer>( this );
     setupUi();
 
     setupStyles();
@@ -150,7 +152,7 @@ void AddSetView::addCardToDraft() {
         return;
     }
 
-    std::vector<std::string> wrong_answers_vec;
+    vector<string> wrong_answers_vec;
     for ( QLineEdit* input : wrong_inputs_ ) {
         if ( !input->text().trimmed().isEmpty() ) {
             wrong_answers_vec.push_back( input->text().trimmed().toStdString() );
@@ -176,8 +178,8 @@ void AddSetView::addCardToDraft() {
     btn_preview->setCursor( Qt::PointingHandCursor );
 
     connect( btn_preview, &QPushButton::clicked, this, [this, q, correct, wrong_answers_vec]() {
-        current_preview_ = std::make_unique<CardPreviewOverlay>(
-            q.toStdString(), correct.toStdString(), wrong_answers_vec );
+        current_preview_ = make_unique<CardPreviewOverlay>( q.toStdString(), correct.toStdString(),
+                                                            wrong_answers_vec );
         auto* preview_ptr = static_cast<CardPreviewOverlay*>( current_preview_.get() );
         connect( preview_ptr, &CardPreviewOverlay::closeClicked, overlay_container_.get(),
                  &OverlayContainer::clearContent );

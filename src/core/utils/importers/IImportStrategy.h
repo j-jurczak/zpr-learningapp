@@ -4,6 +4,7 @@
  */
 #pragma once
 #include <QString>
+
 #include "../../../db/DatabaseManager.h"
 
 class IImportStrategy {
