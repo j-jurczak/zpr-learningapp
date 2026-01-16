@@ -1,6 +1,6 @@
 /*
  * @authors: Jakub Jurczak, Mateusz Woźniak
- * summary: View for the learning process (Modular for Flashcards/Quiz).
+ * summary: View for the learning process.
  */
 #pragma once
 #include <QWidget>
@@ -10,6 +10,7 @@
 #include <QHBoxLayout>
 #include <QProgressBar>
 #include <QFrame>
+#include <QLineEdit>
 
 #include "../../core/learning/LearningSession.h"
 #include "../../db/DatabaseManager.h"
@@ -18,6 +19,7 @@ class LearningView : public QWidget {
     Q_OBJECT
 public:
     explicit LearningView( DatabaseManager& db, QWidget* parent = nullptr );
+
     void startSession( int set_id, LearningMode mode = LearningMode::SpacedRepetition );
 
 signals:
@@ -27,12 +29,19 @@ private slots:
     void onShowAnswerClicked();
     void onGradeClicked( int grade );
     void onChoiceClicked( const QString& answer, QPushButton* senderBtn );
+    void onInputChecked();
 
 private:
     void setupUi();
     void loadCurrentCard();
     void showSummary();
 
+    void renderQuestion( const Card& card );
+    void renderInteraction( const Card& card );
+
+    void renderFlashcardView( const CardData& data );
+    void renderQuizView( const CardData& data );
+    void renderInputView( const CardData& data );
     void clearLayout( QLayout* layout );
     void showGradingButtons();
 
@@ -41,10 +50,9 @@ private:
     LearningMode current_mode_ = LearningMode::SpacedRepetition;
 
     QProgressBar* progress_bar_;
-    QLabel* lbl_question_;
 
-    QWidget* answer_container_;
-    QVBoxLayout* answer_layout_;
+    QFrame* card_frame_;
+    QVBoxLayout* question_layout_;
 
     QWidget* interaction_container_;
     QVBoxLayout* interaction_layout_;

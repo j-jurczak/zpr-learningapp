@@ -7,7 +7,9 @@
 enum class MediaType { TEXT, IMAGE, SOUND };
 
 enum class AnswerType {
-    FLASHCARD,  // click to reveal answer
-    CHOICE,     // click one of the given answers
-    INPUT       // write answer
+    FLASHCARD,     // click to reveal answer
+    TEXT_CHOICE,   // click one of the given text answers
+    SOUND_CHOICE,  // click one of the given answers with sound
+    IMAGE_CHOICE,  // click one of the given answers with image
+    INPUT          // write answer
 };

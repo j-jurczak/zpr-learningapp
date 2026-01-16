@@ -7,15 +7,12 @@
 #include <random>
 
 #include "Card.h"
+#include "../utils/Overloaded.h"
 
 using namespace std;
 
-Card::Card( int id, int set_id, string question, CardData data, MediaType media )
-    : id_( id ),
-      set_id_( set_id ),
-      question_( move( question ) ),
-      data_( move( data ) ),
-      media_type_( media ) {}
+Card::Card( int id, int set_id, CardData data, MediaType media )
+    : id_( id ), set_id_( set_id ), media_type_( media ), data_( move( data ) ) {}
 
 bool Card::areStringsEqual( string_view a, string_view b ) {
     if ( a.size() != b.size() ) {
@@ -27,29 +24,29 @@ bool Card::areStringsEqual( string_view a, string_view b ) {
 }
 
 bool Card::checkAnswer( string_view user_answer ) const {
-    return visit(
-        [&]( const auto& concrete_data ) {
-            return areStringsEqual( user_answer, concrete_data.correct_answer );
-        },
-        data_ );
+    return areStringsEqual( user_answer, data_.correct_answer );
 }
-const string& Card::getCorrectAnswer() const {
-    return visit( []( const auto& d ) -> const string& { return d.correct_answer; }, data_ );
-}
+
+const string& Card::getCorrectAnswer() const { return data_.correct_answer; }
 
 vector<string> Card::getChoices() const {
-    if ( const ChoiceData* choice = get_if<ChoiceData>( &data_ ) ) {
-        vector<string> all = choice->wrong_answers;
-        all.push_back( choice->correct_answer );
-
-        static random_device rd;
-        static default_random_engine rng( rd() );
-        shuffle( all.begin(), all.end(), rng );
-
-        return all;
+    if ( data_.wrong_answers.empty() ) {
+        return {};
     }
+    vector<string> all = data_.wrong_answers;
+    all.push_back( data_.correct_answer );
 
-    return {};
+    static random_device rd;
+    static mt19937 rng( rd() );
+    shuffle( all.begin(), all.end(), rng );
+    return all;
 }
 
-bool Card::isChoiceCard() const { return holds_alternative<ChoiceData>( data_ ); }
+string Card::getQuestion() const {
+    return visit( overloaded{ []( const TextContent& c ) { return c.text; },
+                              []( const ImageContent& c ) { return c.image_path; },
+                              []( const SoundContent& c ) { return c.sound_path; } },
+                  data_.question );
+}
+
+bool Card::isChoiceCard() const { return !data_.wrong_answers.empty(); }

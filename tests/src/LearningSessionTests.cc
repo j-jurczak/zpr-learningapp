@@ -9,11 +9,17 @@
 #include "../../src/core/learning/strategies/SelectionStrategies.h"
 #include "../../src/db/DatabaseManager.h"
 #include "../../src/core/learning/Card.h"
+#include "../../src/core/learning/CardTypes.h"
 
 using namespace std;
 
 Card create_test_card( int id, const string& question ) {
-    return Card( id, 1, question, StandardData{ "Answer" }, MediaType::TEXT );
+    CardData data;
+    data.question = TextContent{ question };
+    data.correct_answer = "Answer";
+    data.answer_type = AnswerType::FLASHCARD;
+
+    return Card( id, 1, data, MediaType::TEXT );
 }
 
 class MockSelectionStrategy : public ICardSelectionStrategy {
