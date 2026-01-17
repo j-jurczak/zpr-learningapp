@@ -10,8 +10,12 @@
 #include <QDebug>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QTranslator>
+#include <QApplication>
 
 #include "MainWindow.h"
+#include "views/SettingsView.h"
+#include "../core/utils/LanguageManager.h"
 #include "views/ViewType.h"
 #include "views/ViewFactory.h"
 #include "views/SetsView.h"
@@ -22,7 +26,7 @@
 
 MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     : QMainWindow( parent ), factory_( factory ) {
-    setWindowTitle( "LearningApp" );
+    setWindowTitle( tr( "LearningApp" ) );
     resize( 1250, 750 );
 
     QWidget* central_widget = new QWidget( this );
@@ -41,9 +45,9 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     sidebar_layout->setContentsMargins( 20, 40, 20, 20 );
     sidebar_layout->setSpacing( 20 );
 
-    btn_home_ = new QPushButton( "• Strona główna", this );
-    btn_sets_ = new QPushButton( "• Moje zestawy", this );
-    btn_settings_ = new QPushButton( "• Ustawienia", this );
+    btn_home_ = new QPushButton( "• " + tr( "Home" ), this );
+    btn_sets_ = new QPushButton( "• " + tr( "My Sets" ), this );
+    btn_settings_ = new QPushButton( "• " + tr( "Settings" ), this );
 
     sidebar_layout->addWidget( btn_home_ );
     sidebar_layout->addWidget( btn_sets_ );
@@ -91,6 +95,12 @@ void MainWindow::setupConnections() {
             main_stack_->setCurrentWidget( settings_view_ );
         }
     } );
+
+    // settings view language change
+    if ( auto* settings_ptr = qobject_cast<SettingsView*>( settings_view_ ) ) {
+        connect( settings_ptr, &SettingsView::languageChanged, this,
+                 &MainWindow::handleLanguageChange );
+    }
 
     // sets view logic
     if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
@@ -198,10 +208,11 @@ void MainWindow::setupConnections() {
 
 bool MainWindow::confirmSessionExit() {
     if ( qobject_cast<LearningView*>( main_stack_->currentWidget() ) ) {
-        auto reply = QMessageBox::question( this, "Sesja w toku",
-                                            "Sesja nauki jest w toku. Czy na pewno chcesz ją "
-                                            "przerwać? \nPostępy są zapisywane na bieżąco.",
-                                            QMessageBox::Yes | QMessageBox::No );
+        auto reply =
+            QMessageBox::question( this, tr( "Session in progress" ),
+                                   tr( "Learning session is in progress. Are you sure you want to "
+                                       "quit? \nProgress is saved automatically." ),
+                                   QMessageBox::Yes | QMessageBox::No );
 
         return ( reply == QMessageBox::Yes );
     }
@@ -218,3 +229,35 @@ void MainWindow::setupStyles() {
 }
 
 MainWindow::~MainWindow() {}
+
+void MainWindow::handleLanguageChange( QString langCode ) {
+    LanguageManager::loadLanguage( langCode );
+    reloadUi();
+}
+
+void MainWindow::reloadUi() {
+    main_stack_->removeWidget( home_view_ );
+    main_stack_->removeWidget( sets_view_ );
+    main_stack_->removeWidget( settings_view_ );
+
+    home_view_->deleteLater();
+    sets_view_->deleteLater();
+    settings_view_->deleteLater();
+
+    home_view_ = factory_.create( ViewType::HOME, {}, this );
+    sets_view_ = factory_.create( ViewType::SETS, {}, this );
+    settings_view_ = factory_.create( ViewType::SETTINGS, {}, this );
+
+    main_stack_->addWidget( home_view_ );
+    main_stack_->addWidget( sets_view_ );
+    main_stack_->addWidget( settings_view_ );
+
+    setWindowTitle( tr( "LearningApp" ) );
+    btn_home_->setText( "• " + tr( "Home" ) );
+    btn_sets_->setText( "• " + tr( "My Sets" ) );
+    btn_settings_->setText( "• " + tr( "Settings" ) );
+
+    setupConnections();
+
+    main_stack_->setCurrentWidget( settings_view_ );
+}

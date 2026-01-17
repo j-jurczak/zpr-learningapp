@@ -43,27 +43,27 @@ void AddSetView::setupUi() {
     main_layout->setContentsMargins( 30, 30, 30, 30 );
     main_layout->setSpacing( 20 );
 
-    QLabel* header = new QLabel( "Stwórz Nowy Zestaw", this );
+    QLabel* header = new QLabel( tr( "Create New Set" ), this );
     header->setStyleSheet(
         "font-size: 24px; font-weight: bold; color: white; margin-bottom: 10px;" );
     main_layout->addWidget( header );
 
-    main_layout->addWidget( new QLabel( "Nazwa zestawu:", this ) );
+    main_layout->addWidget( new QLabel( tr( "Set name:" ), this ) );
     name_input_ = new QLineEdit( this );
-    name_input_->setPlaceholderText( "Np. Historia Polski - Daty" );
+    name_input_->setPlaceholderText( tr( "E.g. History - Dates" ) );
     name_input_->setStyleSheet(
         "padding: 12px; font-size: 16px; background: #252526; color: white; border: 1px solid "
         "#3e3e42; border-radius: 5px;" );
     main_layout->addWidget( name_input_ );
 
-    main_layout->addWidget( new QLabel( "Lista kart w zestawie:", this ) );
+    main_layout->addWidget( new QLabel( tr( "Cards in set:" ), this ) );
     preview_list_ = new QListWidget( this );
     preview_list_->setStyleSheet(
         "QListWidget { background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 5px; "
         "font-size: 14px; } QListWidget::item { padding: 10px; border-bottom: 1px solid #333; }" );
     main_layout->addWidget( preview_list_ );
 
-    btn_open_creator_ = new QPushButton( "+ Dodaj nową kartę", this );
+    btn_open_creator_ = new QPushButton( "+ " + tr( "Add new card" ), this );
     btn_open_creator_->setCursor( Qt::PointingHandCursor );
     btn_open_creator_->setMinimumHeight( 50 );
     btn_open_creator_->setStyleSheet(
@@ -77,14 +77,14 @@ void AddSetView::setupUi() {
 
     QHBoxLayout* bottom_btns = new QHBoxLayout();
 
-    QPushButton* btn_cancel = new QPushButton( "Anuluj", this );
+    QPushButton* btn_cancel = new QPushButton( tr( "Cancel" ), this );
     btn_cancel->setCursor( Qt::PointingHandCursor );
     btn_cancel->setStyleSheet(
         "background: transparent; border: 1px solid #555; color: #ccc; padding: 10px 20px; "
         "border-radius: 5px;" );
     connect( btn_cancel, &QPushButton::clicked, this, [this]() { emit creationCancelled(); } );
 
-    QPushButton* btn_save = new QPushButton( "Stwórz Zestaw", this );
+    QPushButton* btn_save = new QPushButton( tr( "Create Set" ), this );
     btn_save->setCursor( Qt::PointingHandCursor );
     btn_save->setStyleSheet(
         "background-color: #2e7d32; color: white; font-weight: bold; padding: 10px 20px; "
@@ -134,8 +134,8 @@ void AddSetView::onCardSaved( const DraftCard& card ) {
 
     label += " -> " + QString::fromStdString( card.correct_answer );
 
-    if ( card.answer_type == AnswerType::TEXT_CHOICE ) label += " (Quiz)";
-    if ( card.answer_type == AnswerType::INPUT ) label += " (Wpisywanie)";
+    if ( card.answer_type == AnswerType::TEXT_CHOICE ) label += tr( " (Quiz)" );
+    if ( card.answer_type == AnswerType::INPUT ) label += tr( " (Input)" );
 
     QListWidgetItem* item = new QListWidgetItem( label );
     preview_list_->addItem( item );
@@ -147,11 +147,11 @@ void AddSetView::saveSet() {
     QString name = name_input_->text().trimmed();
 
     if ( name.isEmpty() ) {
-        QMessageBox::warning( this, "Błąd", "Podaj nazwę zestawu!" );
+        QMessageBox::warning( this, tr( "Error" ), tr( "Enter set name!" ) );
         return;
     }
     if ( draft_cards_.empty() ) {
-        QMessageBox::warning( this, "Błąd", "Zestaw musi zawierać przynajmniej jedną kartę!" );
+        QMessageBox::warning( this, tr( "Error" ), tr( "Set must contain at least one card!" ) );
         return;
     }
 
@@ -162,6 +162,6 @@ void AddSetView::saveSet() {
 
         emit setCreated();
     } else {
-        QMessageBox::critical( this, "Błąd", "Nie udało się zapisać zestawu w bazie danych." );
+        QMessageBox::critical( this, tr( "Error" ), tr( "Could not save set to database." ) );
     }
 }

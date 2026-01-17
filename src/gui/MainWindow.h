@@ -20,7 +20,12 @@ private:
     void setupStyles();
     void setupConnections();
     bool confirmSessionExit();
+    void reloadUi();
 
+private slots:
+    void handleLanguageChange( QString langCode );
+
+private:
     QStackedWidget* main_stack_;
 
     QPushButton* btn_home_;
