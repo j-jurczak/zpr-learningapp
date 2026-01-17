@@ -4,6 +4,7 @@
 #include <QDir>
 #include <memory>
 #include <iostream>
+#include <variant>
 
 #include "../../src/core/learning/LearningSession.h"
 #include "../../src/core/learning/strategies/SelectionStrategies.h"
@@ -13,7 +14,14 @@
 using namespace std;
 
 Card create_test_card( int id, const string& question ) {
-    return Card( id, 1, question, StandardData{ "Answer" }, MediaType::TEXT );
+    CardData data;
+    data.id = id;
+    data.set_id = 1;
+    data.question = TextContent{ question };
+    data.correct_answer = "Answer";
+    data.answer_type = AnswerType::FLASHCARD;
+
+    return Card( data );
 }
 
 class MockSelectionStrategy : public ICardSelectionStrategy {
@@ -44,10 +52,20 @@ TEST_CASE( "LearningSession Integration Tests", "[LearningSession]" ) {
         FAIL( "Could not connect to TEST database." );
     }
     db.createTables();
+
     db.createSet( "Integration Test Set", {} );
-    db.addCardToSet( 1, { "Q1", "A1", {} } );
-    db.addCardToSet( 1, { "Q2", "A2", {} } );
-    db.addCardToSet( 1, { "Q3", "A3", {} } );
+
+    auto add_db_card = [&]( const string& q, const string& a ) {
+        DraftCard draft;
+        draft.question = TextContent{ q };
+        draft.correct_answer = a;
+        draft.answer_type = AnswerType::FLASHCARD;
+        db.addCardToSet( 1, draft );
+    };
+
+    add_db_card( "Q1", "A1" );
+    add_db_card( "Q2", "A2" );
+    add_db_card( "Q3", "A3" );
 
     vector<Card> memory_cards = { create_test_card( 1, "Q1" ), create_test_card( 2, "Q2" ),
                                   create_test_card( 3, "Q3" ) };

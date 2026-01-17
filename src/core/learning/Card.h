@@ -10,41 +10,54 @@
 
 #include "CardTypes.h"
 
-struct StandardData {
-    std::string correct_answer;
+struct TextContent {
+    std::string text;
+};
+struct ImageContent {
+    std::string image_path;
+};
+struct SoundContent {
+    std::string sound_path;
 };
 
-struct ChoiceData {
+using QuestionPayload = std::variant<TextContent, ImageContent, SoundContent>;
+
+struct CardData {
+    int id;
+    int set_id;
+    QuestionPayload question;
     std::string correct_answer;
     std::vector<std::string> wrong_answers;
+    AnswerType answer_type = AnswerType::FLASHCARD;
 };
 
-using CardData = std::variant<StandardData, ChoiceData>;
+struct DraftCard {
+    QuestionPayload question;
+    std::string correct_answer;
+    std::vector<std::string> wrong_answers;
+    AnswerType answer_type = AnswerType::FLASHCARD;
+};
 
 class Card {
 public:
-    Card( int id, int set_id, std::string question, CardData data,
-          MediaType media = MediaType::TEXT );
+    explicit Card( const CardData& data );
 
     Card() = default;
 
     bool checkAnswer( std::string_view user_answer ) const;
-    const std::string& getCorrectAnswer() const;
-
     std::vector<std::string> getChoices() const;
-
-    int getId() const { return id_; }
-    const std::string& getQuestion() const { return question_; }
-    const CardData& getData() const { return data_; }
-    MediaType getMediaType() const { return media_type_; }
-
+    std::string getQuestion() const;
     bool isChoiceCard() const;
 
+    int getId() const { return data_.id; }
+    int getSetId() const { return data_.set_id; }
+    MediaType getMediaType() const { return media_type_; }
+    const CardData& getData() const { return data_; }
+    const std::string& getCorrectAnswer() const { return data_.correct_answer; }
+
 private:
-    int id_;
-    int set_id_;
-    std::string question_;
     MediaType media_type_;
     CardData data_;
+
     static bool areStringsEqual( std::string_view a, std::string_view b );
 };

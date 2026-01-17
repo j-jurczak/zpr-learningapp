@@ -4,52 +4,44 @@
  */
 #include <algorithm>
 #include <cctype>
-#include <random>
 
 #include "Card.h"
 
 using namespace std;
 
-Card::Card( int id, int set_id, string question, CardData data, MediaType media )
-    : id_( id ),
-      set_id_( set_id ),
-      question_( move( question ) ),
-      data_( move( data ) ),
-      media_type_( media ) {}
-
-bool Card::areStringsEqual( string_view a, string_view b ) {
-    if ( a.size() != b.size() ) {
-        return false;
+Card::Card( const CardData& data ) : data_( data ) {
+    if ( holds_alternative<ImageContent>( data_.question ) ) {
+        media_type_ = MediaType::IMAGE;
+    } else if ( holds_alternative<SoundContent>( data_.question ) ) {
+        media_type_ = MediaType::SOUND;
+    } else {
+        media_type_ = MediaType::TEXT;
     }
-    return equal( a.begin(), a.end(), b.begin(), []( unsigned char c1, unsigned char c2 ) {
-        return tolower( c1 ) == tolower( c2 );
-    } );
 }
 
 bool Card::checkAnswer( string_view user_answer ) const {
-    return visit(
-        [&]( const auto& concrete_data ) {
-            return areStringsEqual( user_answer, concrete_data.correct_answer );
-        },
-        data_ );
-}
-const string& Card::getCorrectAnswer() const {
-    return visit( []( const auto& d ) -> const string& { return d.correct_answer; }, data_ );
+    return areStringsEqual( user_answer, data_.correct_answer );
 }
 
 vector<string> Card::getChoices() const {
-    if ( const ChoiceData* choice = get_if<ChoiceData>( &data_ ) ) {
-        vector<string> all = choice->wrong_answers;
-        all.push_back( choice->correct_answer );
-
-        static random_device rd;
-        static default_random_engine rng( rd() );
-        shuffle( all.begin(), all.end(), rng );
-
-        return all;
-    }
-
-    return {};
+    vector<string> choices = data_.wrong_answers;
+    choices.push_back( data_.correct_answer );
+    return choices;
 }
 
-bool Card::isChoiceCard() const { return holds_alternative<ChoiceData>( data_ ); }
+string Card::getQuestion() const {
+    if ( holds_alternative<TextContent>( data_.question ) ) {
+        return get<TextContent>( data_.question ).text;
+    }
+    return "[Media Content]";
+}
+
+bool Card::isChoiceCard() const {
+    return !data_.wrong_answers.empty() || data_.answer_type == AnswerType::TEXT_CHOICE ||
+           data_.answer_type == AnswerType::IMAGE_CHOICE;
+}
+
+bool Card::areStringsEqual( string_view a, string_view b ) {
+    return equal( a.begin(), a.end(), b.begin(), b.end(),
+                  []( char a, char b ) { return tolower( a ) == tolower( b ); } );
+}

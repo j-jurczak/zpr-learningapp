@@ -51,6 +51,29 @@ void SetView::setupUi() {
     header_layout->addWidget( title_label_ );
     header_layout->addStretch();
 
+    QPushButton* btn_delete_set = new QPushButton( "🗑 Usuń Zestaw", this );
+    btn_delete_set->setCursor( Qt::PointingHandCursor );
+    btn_delete_set->setStyleSheet(
+        "background-color: #c62828; color: white; border: none; padding: 5px 10px; border-radius: "
+        "4px; margin-right: 10px;" );
+
+    connect( btn_delete_set, &QPushButton::clicked, this, [this]() {
+        auto reply = QMessageBox::question(
+            this, "Usuń Zestaw",
+            "Czy na pewno chcesz usunąć ten zestaw wraz ze wszystkimi kartami?",
+            QMessageBox::Yes | QMessageBox::No );
+
+        if ( reply == QMessageBox::Yes ) {
+            if ( db_.deleteSet( set_id_ ) ) {
+                emit backToSetsClicked();
+            } else {
+                QMessageBox::critical( this, "Błąd", "Nie udało się usunąć zestawu." );
+            }
+        }
+    } );
+
+    header_layout->addWidget( btn_delete_set );
+
     QPushButton* btn_add = new QPushButton( "+ Dodaj Pytanie", this );
     btn_add->setCursor( Qt::PointingHandCursor );
 
@@ -94,8 +117,29 @@ void SetView::setupUi() {
     connect( act_random, &QAction::triggered, this,
              [this]() { emit learnClicked( set_id_, LearningMode::Random ); } );
 
+    learn_menu->addSeparator();
+
+    QAction* act_reset = new QAction( "Zresetuj postępy zestawu", learn_menu );
+
+    connect( act_reset, &QAction::triggered, this, [this]() {
+        auto reply = QMessageBox::question( this, "Reset postępów",
+                                            "Czy na pewno chcesz wyzerować postępy nauki dla tego "
+                                            "zestawu? Karty znów będą traktowane jak nowe.",
+                                            QMessageBox::Yes | QMessageBox::No );
+
+        if ( reply == QMessageBox::Yes ) {
+            if ( db_.resetSetProgress( set_id_ ) ) {
+                QMessageBox::information( this, "Sukces", "Postępy zostały zresetowane." );
+            } else {
+                QMessageBox::critical( this, "Błąd", "Nie udało się zresetować postępów." );
+            }
+        }
+    } );
+
     learn_menu->addAction( act_sm2 );
     learn_menu->addAction( act_random );
+    learn_menu->addSeparator();
+    learn_menu->addAction( act_reset );
 
     btn_learn->setMenu( learn_menu );
 

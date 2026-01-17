@@ -2,14 +2,16 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class of the main application window - source file.
  */
-#include "MainWindow.h"
 #include <QFile>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QStackedWidget>
 #include <QDebug>
+#include <QMessageBox>
+#include <QPushButton>
 
+#include "MainWindow.h"
 #include "views/ViewType.h"
 #include "views/ViewFactory.h"
 #include "views/SetsView.h"
@@ -69,14 +71,26 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
 
 void MainWindow::setupConnections() {
     // sidebar buttons
-    connect( btn_home_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentWidget( home_view_ ); } );
+    connect( btn_home_, &QPushButton::clicked, this, [this]() {
+        if ( confirmSessionExit() ) {
+            main_stack_->setCurrentWidget( home_view_ );
+        }
+    } );
 
-    connect( btn_sets_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentWidget( sets_view_ ); } );
+    connect( btn_sets_, &QPushButton::clicked, this, [this]() {
+        if ( confirmSessionExit() ) {
+            if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
+                sets_ptr->refreshSetsList();
+            }
+            main_stack_->setCurrentWidget( sets_view_ );
+        }
+    } );
 
-    connect( btn_settings_, &QPushButton::clicked, this,
-             [this]() { main_stack_->setCurrentWidget( settings_view_ ); } );
+    connect( btn_settings_, &QPushButton::clicked, this, [this]() {
+        if ( confirmSessionExit() ) {
+            main_stack_->setCurrentWidget( settings_view_ );
+        }
+    } );
 
     // sets view logic
     if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
@@ -91,9 +105,12 @@ void MainWindow::setupConnections() {
                     main_stack_->setCurrentWidget( sets_view_ );
                     main_stack_->removeWidget( detail_view );
                     detail_view->deleteLater();
+                    if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
+                        sets_ptr->refreshSetsList();
+                    }
                 } );
 
-                // LearningView start
+                // LearningView start logic
                 connect(
                     detail_ptr, &SetView::learnClicked, this,
                     [this, detail_view]( int id, LearningMode mode ) {
@@ -114,7 +131,6 @@ void MainWindow::setupConnections() {
                                     main_stack_->removeWidget( learning_widget );
                                     learning_widget->deleteLater();
                                 } );
-
                             main_stack_->removeWidget( detail_view );
                             detail_view->deleteLater();
 
@@ -178,6 +194,18 @@ void MainWindow::setupConnections() {
     } else {
         qCritical() << "MainWindow type error: sets_view_ is not a SetsView!";
     }
+}
+
+bool MainWindow::confirmSessionExit() {
+    if ( qobject_cast<LearningView*>( main_stack_->currentWidget() ) ) {
+        auto reply = QMessageBox::question( this, "Sesja w toku",
+                                            "Sesja nauki jest w toku. Czy na pewno chcesz ją "
+                                            "przerwać? \nPostępy są zapisywane na bieżąco.",
+                                            QMessageBox::Yes | QMessageBox::No );
+
+        return ( reply == QMessageBox::Yes );
+    }
+    return true;
 }
 
 void MainWindow::setupStyles() {

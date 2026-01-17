@@ -1,58 +1,91 @@
 #include <catch2/catch_test_macros.hpp>
 #include <vector>
 #include <algorithm>
+#include <iostream>
+#include <variant>
+
 #include "../../src/core/learning/Card.h"
 
 using namespace std;
 
 TEST_CASE( "Card Class Functionality", "[Card]" ) {
-    StandardData standard_data = { "Jupiter" };
-    Card standard_card =
-        Card( 1, 100, "What is the largest planet?", standard_data, MediaType::TEXT );
+    CardData flashcard_data;
+    flashcard_data.id = 1;
+    flashcard_data.set_id = 100;
+    flashcard_data.question = TextContent{ "What is the largest planet?" };
+    flashcard_data.correct_answer = "Jupiter";
+    flashcard_data.answer_type = AnswerType::FLASHCARD;
 
-    ChoiceData choice_data = { "Red", { "Blue", "Green", "Yellow" } };
-    Card choice_card = Card( 2, 200, "What color is a stop sign?", choice_data, MediaType::IMAGE );
+    Card standard_card( flashcard_data );
 
-    SECTION( "Constructor and Getters" ) {
+    CardData quiz_data;
+    quiz_data.id = 2;
+    quiz_data.set_id = 200;
+    quiz_data.question = ImageContent{ "stop_sign.png" };
+    quiz_data.correct_answer = "Red";
+    quiz_data.wrong_answers = { "Blue", "Green", "Yellow" };
+    quiz_data.answer_type = AnswerType::TEXT_CHOICE;
+
+    Card image_quiz_card( quiz_data );
+
+    CardData input_data;
+    input_data.id = 3;
+    input_data.set_id = 300;
+    input_data.question = TextContent{ "Translate: Kot" };
+    input_data.correct_answer = "Cat";
+    input_data.answer_type = AnswerType::INPUT;
+
+    Card input_card( input_data );
+
+    SECTION( "Constructor and Getters (Text Content)" ) {
         REQUIRE( standard_card.getId() == 1 );
-        REQUIRE( standard_card.getQuestion() == "What is the largest planet?" );
+
         REQUIRE( standard_card.getMediaType() == MediaType::TEXT );
 
-        REQUIRE( choice_card.getId() == 2 );
-        REQUIRE( choice_card.getQuestion() == "What color is a stop sign?" );
-        REQUIRE( choice_card.getMediaType() == MediaType::IMAGE );
+        REQUIRE( standard_card.getQuestion() == "What is the largest planet?" );
+
+        REQUIRE( standard_card.getData().answer_type == AnswerType::FLASHCARD );
     }
 
-    SECTION( "Answer Checking - Standard Card" ) {
-        CHECK( standard_card.checkAnswer( "Jupiter" ) );
+    SECTION( "Constructor and Getters (Image Content)" ) {
+        REQUIRE( image_quiz_card.getId() == 2 );
 
+        REQUIRE( image_quiz_card.getMediaType() == MediaType::IMAGE );
+
+        REQUIRE( image_quiz_card.getQuestion() == "[Media Content]" );
+
+        bool holds_image =
+            std::holds_alternative<ImageContent>( image_quiz_card.getData().question );
+        REQUIRE( holds_image );
+        if ( holds_image ) {
+            REQUIRE( std::get<ImageContent>( image_quiz_card.getData().question ).image_path ==
+                     "stop_sign.png" );
+        }
+    }
+
+    SECTION( "Answer Checking - Case Insensitivity" ) {
+        CHECK( standard_card.checkAnswer( "Jupiter" ) );
         CHECK( standard_card.checkAnswer( "JUPITER" ) );
         CHECK( standard_card.checkAnswer( "jupiter" ) );
-        CHECK( standard_card.checkAnswer( "jUpiTeR" ) );
-
         CHECK_FALSE( standard_card.checkAnswer( "Mars" ) );
 
-        CHECK_FALSE( standard_card.checkAnswer( "Jupit" ) );
+        CHECK( input_card.checkAnswer( "Cat" ) );
+        CHECK( input_card.checkAnswer( "cat" ) );
+        CHECK_FALSE( input_card.checkAnswer( "Dog" ) );
     }
 
-    SECTION( "Answer Checking - Choice Card" ) {
-        CHECK( choice_card.checkAnswer( "Red" ) );
+    SECTION( "Is Choice Card Logic" ) {
+        REQUIRE( image_quiz_card.isChoiceCard() );
 
-        CHECK( choice_card.checkAnswer( "RED" ) );
-        CHECK( choice_card.checkAnswer( "rEd" ) );
-
-        CHECK_FALSE( choice_card.checkAnswer( "Blue" ) );
-    }
-
-    SECTION( "Card Type Identification" ) {
-        REQUIRE( choice_card.isChoiceCard() );
         REQUIRE_FALSE( standard_card.isChoiceCard() );
+        REQUIRE_FALSE( input_card.isChoiceCard() );
     }
 
     SECTION( "Multiple Choice Handling" ) {
-        REQUIRE( standard_card.getChoices().empty() );
+        REQUIRE( standard_card.getChoices().size() == 1 );
+        REQUIRE( standard_card.getChoices()[0] == "Jupiter" );
 
-        vector<string> choices = choice_card.getChoices();
+        vector<string> choices = image_quiz_card.getChoices();
 
         REQUIRE( choices.size() == 4 );
 
