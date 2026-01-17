@@ -40,18 +40,18 @@ void SetView::setupUi() {
 
     QHBoxLayout* header_layout = new QHBoxLayout();
 
-    QPushButton* btn_back = new QPushButton( "← Wróć", this );
+    QPushButton* btn_back = new QPushButton( "← " + tr( "Back" ), this );
     btn_back->setCursor( Qt::PointingHandCursor );
     connect( btn_back, &QPushButton::clicked, this, &SetView::backToSetsClicked );
 
-    title_label_ = new QLabel( "Ładowanie...", this );
+    title_label_ = new QLabel( tr( "Loading..." ), this );
     title_label_->setStyleSheet( "font-size: 24px; font-weight: bold; margin-left: 10px;" );
 
     header_layout->addWidget( btn_back );
     header_layout->addWidget( title_label_ );
     header_layout->addStretch();
 
-    QPushButton* btn_delete_set = new QPushButton( "🗑 Usuń Zestaw", this );
+    QPushButton* btn_delete_set = new QPushButton( "🗑 " + tr( "Delete Set" ), this );
     btn_delete_set->setCursor( Qt::PointingHandCursor );
     btn_delete_set->setStyleSheet(
         "background-color: #c62828; color: white; border: none; padding: 5px 10px; border-radius: "
@@ -59,22 +59,22 @@ void SetView::setupUi() {
 
     connect( btn_delete_set, &QPushButton::clicked, this, [this]() {
         auto reply = QMessageBox::question(
-            this, "Usuń Zestaw",
-            "Czy na pewno chcesz usunąć ten zestaw wraz ze wszystkimi kartami?",
+            this, tr( "Delete Set" ),
+            tr( "Are you sure you want to delete this set and all its cards?" ),
             QMessageBox::Yes | QMessageBox::No );
 
         if ( reply == QMessageBox::Yes ) {
             if ( db_.deleteSet( set_id_ ) ) {
                 emit backToSetsClicked();
             } else {
-                QMessageBox::critical( this, "Błąd", "Nie udało się usunąć zestawu." );
+                QMessageBox::critical( this, tr( "Error" ), tr( "Could not delete set." ) );
             }
         }
     } );
 
     header_layout->addWidget( btn_delete_set );
 
-    QPushButton* btn_add = new QPushButton( "+ Dodaj Pytanie", this );
+    QPushButton* btn_add = new QPushButton( "+ " + tr( "Add Question" ), this );
     btn_add->setCursor( Qt::PointingHandCursor );
 
     connect( btn_add, &QPushButton::clicked, this, [this]() {
@@ -89,14 +89,14 @@ void SetView::setupUi() {
                          overlay_container_->clearContent();
                          loadData();
                      } else {
-                         QMessageBox::critical( this, "Błąd", "Nie udało się zapisać karty." );
+                         QMessageBox::critical( this, tr( "Error" ), tr( "Could not save card." ) );
                      }
                  } );
 
         overlay_container_->setContent( add_overlay_.get() );
     } );
 
-    QPushButton* btn_learn = new QPushButton( "▶ Ucz się", this );
+    QPushButton* btn_learn = new QPushButton( "▶ " + tr( "Learn" ), this );
     btn_learn->setCursor( Qt::PointingHandCursor );
     btn_learn->setStyleSheet(
         "QPushButton { background-color: #0078d4; color: white; font-weight: bold; padding: 5px "
@@ -109,35 +109,38 @@ void SetView::setupUi() {
         "QMenu { background-color: #2d2d30; color: white; border: 1px solid #3e3e42; } "
         "QMenu::item:selected { background-color: #0078d4; }" );
 
-    QAction* act_sm2 = new QAction( "Inteligentna powtórka (SM-2)", learn_menu );
+    QAction* act_sm2 = new QAction( tr( "Smart Repetition (SM-2)" ), learn_menu );
     connect( act_sm2, &QAction::triggered, this,
              [this]() { emit learnClicked( set_id_, LearningMode::SpacedRepetition ); } );
 
-    QAction* act_random = new QAction( "Szybka powtórka (Losowo)", learn_menu );
+    QAction* act_random = new QAction( tr( "Quick Review (Random)" ), learn_menu );
     connect( act_random, &QAction::triggered, this,
              [this]() { emit learnClicked( set_id_, LearningMode::Random ); } );
 
     learn_menu->addSeparator();
 
-    QAction* act_reset = new QAction( "Zresetuj postępy zestawu", learn_menu );
+    QAction* act_reset = new QAction( tr( "Reset set progress" ), learn_menu );
 
     connect( act_reset, &QAction::triggered, this, [this]() {
-        auto reply = QMessageBox::question( this, "Reset postępów",
-                                            "Czy na pewno chcesz wyzerować postępy nauki dla tego "
-                                            "zestawu? Karty znów będą traktowane jak nowe.",
-                                            QMessageBox::Yes | QMessageBox::No );
+        auto reply =
+            QMessageBox::question( this, tr( "Reset progress" ),
+                                   tr( "Are you sure you want to reset learning progress for this "
+                                       "set? Cards will be treated as new." ),
+                                   QMessageBox::Yes | QMessageBox::No );
 
         if ( reply == QMessageBox::Yes ) {
             if ( db_.resetSetProgress( set_id_ ) ) {
-                QMessageBox::information( this, "Sukces", "Postępy zostały zresetowane." );
+                QMessageBox::information( this, tr( "Success" ), tr( "Progress reset." ) );
             } else {
-                QMessageBox::critical( this, "Błąd", "Nie udało się zresetować postępów." );
+                QMessageBox::critical( this, tr( "Error" ), tr( "Could not reset progress." ) );
             }
         }
     } );
 
     learn_menu->addAction( act_sm2 );
     learn_menu->addAction( act_random );
+    learn_menu->addSeparator();
+    learn_menu->addAction( act_reset );
     learn_menu->addSeparator();
     learn_menu->addAction( act_reset );
 
@@ -157,7 +160,7 @@ void SetView::loadData() {
     if ( set_opt.has_value() ) {
         title_label_->setText( QString::fromStdString( set_opt->name ) );
     } else {
-        title_label_->setText( "Nieznany zestaw" );
+        title_label_->setText( tr( "Unknown set" ) );
     }
 
     current_cards_ = db_.getCardsForSet( set_id_ );
@@ -199,7 +202,7 @@ void SetView::loadData() {
         btn_delete->setStyleSheet( "color: #888; border: none; font-weight: bold;" );
 
         connect( btn_delete, &QPushButton::clicked, this, [this, card_id]() {
-            auto reply = QMessageBox::question( this, "Usuń", "Usunąć to pytanie?",
+            auto reply = QMessageBox::question( this, tr( "Delete" ), tr( "Delete this question?" ),
                                                 QMessageBox::Yes | QMessageBox::No );
             if ( reply == QMessageBox::Yes ) {
                 if ( db_.deleteCard( card_id ) ) {

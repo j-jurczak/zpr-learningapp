@@ -25,7 +25,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
     layout->setContentsMargins( 40, 40, 40, 40 );
     layout->setSpacing( 20 );
 
-    QLabel* title = new QLabel( "Twoje Zestawy", this );
+    QLabel* title = new QLabel( tr( "Your Sets" ), this );
     title->setObjectName( "title" );
     title->setAlignment( Qt::AlignLeft );
     layout->addWidget( title );
@@ -33,23 +33,23 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
     QHBoxLayout* btn_layout = new QHBoxLayout();
     btn_layout->setAlignment( Qt::AlignLeft );
 
-    QPushButton* btn_new = new QPushButton( "+ Nowy Zestaw", this );
+    QPushButton* btn_new = new QPushButton( "+ " + tr( "New Set" ), this );
     btn_new->setObjectName( "btn_new_set" );
     btn_new->setCursor( Qt::PointingHandCursor );
 
     connect( btn_new, &QPushButton::clicked, this, [this]() { emit newSetClicked(); } );
 
-    QPushButton* btn_import = new QPushButton( "Importuj", this );
+    QPushButton* btn_import = new QPushButton( tr( "Import" ), this );
     btn_import->setObjectName( "btn_import" );
     btn_import->setCursor( Qt::PointingHandCursor );
 
     connect( btn_import, &QPushButton::clicked, this, [this]() {
         QApplication::beep();
 
-        QFileDialog dialog( nullptr, "Wybierz plik zestawu" );
+        QFileDialog dialog( nullptr, tr( "Choose set file" ) );
 
         dialog.setDirectory( QDir::homePath() );
-        dialog.setNameFilter( "Pliki danych (*.json *.csv);;Wszystkie pliki (*)" );
+        dialog.setNameFilter( tr( "Data files (*.json *.csv);;All files (*)" ) );
         dialog.setFileMode( QFileDialog::ExistingFile );
 
         dialog.setOption( QFileDialog::DontUseNativeDialog, true );
@@ -64,11 +64,11 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
 
                 QString error;
                 if ( SetImporter::importFile( fileName, db_manager_, error ) ) {
-                    QMessageBox::information( this, "Sukces", "Zestaw zaimportowany pomyślnie!" );
+                    QMessageBox::information( this, tr( "Success" ), tr( "Set imported successfully!" ) );
                     refreshSetsList();
                 } else {
                     QApplication::beep();
-                    QMessageBox::critical( nullptr, "Błąd Importu", error );
+                    QMessageBox::critical( nullptr, tr( "Import Error" ), error );
                 }
             }
         }
@@ -101,7 +101,7 @@ void SetsView::refreshSetsList() {
     vector<StudySet> sets = db_manager_.getAllSets();
 
     if ( sets.empty() ) {
-        QListWidgetItem* item = new QListWidgetItem( "Brak zestawów. Kliknij '+', aby dodać." );
+        QListWidgetItem* item = new QListWidgetItem( tr( "No sets. Click '+' to add." ) );
         item->setFlags( Qt::NoItemFlags );
         item->setTextAlignment( Qt::AlignCenter );
         list_widget_->addItem( item );

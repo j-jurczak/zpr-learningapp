@@ -40,7 +40,7 @@ void CardPreviewOverlay::setupUi( const std::string& question, const std::string
     QHBoxLayout* top_layout = new QHBoxLayout( top_bar );
     top_layout->setContentsMargins( 15, 0, 5, 0 );
 
-    QLabel* title = new QLabel( "PODGLĄD KARTY", top_bar );
+    QLabel* title = new QLabel( tr( "CARD PREVIEW" ), top_bar );
     title->setStyleSheet( "color: #aaaaaa; font-weight: bold; font-size: 12px; border: none;" );
 
     QPushButton* btn_close = new QPushButton( "✕", top_bar );
@@ -63,7 +63,7 @@ void CardPreviewOverlay::setupUi( const std::string& question, const std::string
     body_layout->setContentsMargins( 20, 10, 20, 10 );
     body_layout->setSpacing( 10 );
 
-    QLabel* lbl_q_header = new QLabel( "PYTANIE", body );
+    QLabel* lbl_q_header = new QLabel( tr( "QUESTION" ), body );
     lbl_q_header->setObjectName( "header" );
     body_layout->addWidget( lbl_q_header );
 
@@ -73,7 +73,7 @@ void CardPreviewOverlay::setupUi( const std::string& question, const std::string
         "font-size: 18px; font-weight: bold; color: white; margin-bottom: 5px;" );
     body_layout->addWidget( lbl_question );
 
-    QLabel* lbl_a_header = new QLabel( "POPRAWNA ODPOWIEDŹ", body );
+    QLabel* lbl_a_header = new QLabel( tr( "CORRECT ANSWER" ), body );
     lbl_a_header->setObjectName( "header" );
     body_layout->addWidget( lbl_a_header );
 
@@ -83,7 +83,7 @@ void CardPreviewOverlay::setupUi( const std::string& question, const std::string
     body_layout->addWidget( lbl_correct );
 
     if ( !wrong.empty() ) {
-        QLabel* lbl_w_header = new QLabel( "BŁĘDNE ODPOWIEDZI", body );
+        QLabel* lbl_w_header = new QLabel( tr( "WRONG ANSWERS" ), body );
         lbl_w_header->setObjectName( "header" );
         body_layout->addWidget( lbl_w_header );
 
