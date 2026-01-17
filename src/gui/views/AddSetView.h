@@ -5,52 +5,42 @@
 #pragma once
 #include <QWidget>
 #include <QLineEdit>
-#include <QListWidget>
-#include <QVBoxLayout>
 #include <QPushButton>
+#include <QListWidget>
 #include <vector>
 #include <memory>
+
 #include "../../db/DatabaseManager.h"
+#include "../../core/learning/Card.h"
 
 class OverlayContainer;
 
 class AddSetView : public QWidget {
     Q_OBJECT
+
 public:
     explicit AddSetView( DatabaseManager& db, QWidget* parent = nullptr );
-
-protected:
     void resizeEvent( QResizeEvent* event ) override;
 
 signals:
-    void creationCancelled();
     void setCreated();
-
-private slots:
-    void addCardToDraft();
-    void saveSet();
-    void creationCancelledClicked();
-    void addWrongAnswerField();
+    void creationCancelled();
 
 private:
     void setupUi();
     void setupStyles();
-    void resetCardForm();
+
+    void onAddCardClicked();
+    void onCardSaved( const DraftCard& card );
+    void saveSet();
 
     DatabaseManager& db_;
+    std::unique_ptr<OverlayContainer> overlay_container_;
 
     QLineEdit* name_input_;
     QListWidget* preview_list_;
 
-    QLineEdit* question_input_;
-    QLineEdit* correct_input_;
-
-    QPushButton* btn_add_wrong_;
-    QVBoxLayout* wrong_answers_layout_;
-    std::vector<QLineEdit*> wrong_inputs_;
+    QPushButton* btn_open_creator_;
 
     std::vector<DraftCard> draft_cards_;
-
-    std::unique_ptr<OverlayContainer> overlay_container_;
-    std::unique_ptr<QWidget> current_preview_;
 };

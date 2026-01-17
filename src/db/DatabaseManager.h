@@ -12,14 +12,6 @@
 #include "../core/learning/Card.h"
 #include "../core/learning/StudySet.h"
 
-struct DraftCard {
-    std::string question;
-    std::string correct_answer;
-    std::vector<std::string> wrong_answers;
-    AnswerType answer_type = AnswerType::FLASHCARD;
-    MediaType media_type = MediaType::TEXT;
-};
-
 class DatabaseManager {
 public:
     explicit DatabaseManager( const QString& db_name = "learning_app.db" );

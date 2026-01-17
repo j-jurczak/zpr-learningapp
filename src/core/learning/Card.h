@@ -13,11 +13,9 @@
 struct TextContent {
     std::string text;
 };
-
 struct ImageContent {
     std::string image_path;
 };
-
 struct SoundContent {
     std::string sound_path;
 };
@@ -25,6 +23,15 @@ struct SoundContent {
 using QuestionPayload = std::variant<TextContent, ImageContent, SoundContent>;
 
 struct CardData {
+    int id;
+    int set_id;
+    QuestionPayload question;
+    std::string correct_answer;
+    std::vector<std::string> wrong_answers;
+    AnswerType answer_type = AnswerType::FLASHCARD;
+};
+
+struct DraftCard {
     QuestionPayload question;
     std::string correct_answer;
     std::vector<std::string> wrong_answers;
@@ -33,27 +40,22 @@ struct CardData {
 
 class Card {
 public:
-    Card( int id, int set_id, CardData data, MediaType media_type );
+    explicit Card( const CardData& data );
 
     Card() = default;
 
     bool checkAnswer( std::string_view user_answer ) const;
-    const std::string& getCorrectAnswer() const;
     std::vector<std::string> getChoices() const;
-
-    // getters
-    int getId() const { return id_; }
-    int getSetId() const { return set_id_; }
-    MediaType getMediaType() const { return media_type_; }
-    const CardData& getData() const { return data_; }
     std::string getQuestion() const;
-
     bool isChoiceCard() const;
 
-private:
-    int id_;
-    int set_id_;
+    int getId() const { return data_.id; }
+    int getSetId() const { return data_.set_id; }
+    MediaType getMediaType() const { return media_type_; }
+    const CardData& getData() const { return data_; }
+    const std::string& getCorrectAnswer() const { return data_.correct_answer; }
 
+private:
     MediaType media_type_;
     CardData data_;
 

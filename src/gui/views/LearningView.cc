@@ -6,15 +6,26 @@
 #include <QDebug>
 #include <QPixmap>
 #include <QSettings>
-#include <QSettings>
 #include <QRandomGenerator>
 #include <QTimer>
+#include <QDir>
 
 #include "LearningView.h"
 #include "../../core/utils/Overloaded.h"
 #include "../../core/learning/strategies/SelectionStrategies.h"
 
 using namespace std;
+
+QString getMediaPath( const string& relative_path ) {
+    QString rel = QString::fromStdString( relative_path );
+
+#ifdef PROJECT_ROOT
+    QDir dir( QString( PROJECT_ROOT ) );
+    return dir.filePath( "data/media/" + rel );
+#else
+    return QDir::current().filePath( "data/media/" + rel );
+#endif
+}
 
 LearningView::LearningView( DatabaseManager& db, QWidget* parent )
     : QWidget( parent ), db_( db ), session_( db ) {
@@ -150,41 +161,43 @@ void LearningView::loadCurrentCard() {
 void LearningView::renderQuestion( const Card& card ) {
     const auto& questionPayload = card.getData().question;
 
-    visit( overloaded{
-               [&]( const TextContent& c ) {
-                   QLabel* l = new QLabel( QString::fromStdString( c.text ), card_frame_ );
-                   l->setWordWrap( true );
-                   l->setAlignment( Qt::AlignCenter );
-                   l->setStyleSheet(
-                       "font-size: 24px; font-weight: bold; color: #ffffff; border: none;" );
-                   question_layout_->addWidget( l );
-               },
-               [&]( const ImageContent& c ) {
-                   QLabel* imgLabel = new QLabel( card_frame_ );
-                   imgLabel->setAlignment( Qt::AlignCenter );
-                   QString path = db_.getImagesPath() + QString::fromStdString( c.image_path );
-                   QPixmap pix( path );
-                   if ( !pix.isNull() ) {
-                       imgLabel->setPixmap(
-                           pix.scaled( 400, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
-                   } else {
-                       imgLabel->setText(
-                           "[Brak obrazka: " + QString::fromStdString( c.image_path ) + "]" );
-                       imgLabel->setStyleSheet( "color: #e53935;" );
-                   }
-                   question_layout_->addWidget( imgLabel );
-               },
-               [&]( const SoundContent& c ) {
-                   QPushButton* btn = new QPushButton( "▶ Odtwórz dźwięk", card_frame_ );
-                   btn->setFixedSize( 200, 60 );
-                   btn->setStyleSheet( "font-size: 16px;" );
-                   // to-do: implement sound playback
-                   question_layout_->addWidget( btn );
-                   QLabel* info = new QLabel(
-                       "(Dźwięk: " + QString::fromStdString( c.sound_path ) + ")", card_frame_ );
-                   info->setStyleSheet( "color: #888; border: none;" );
-                   question_layout_->addWidget( info );
-               } },
+    visit( overloaded{ [&]( const TextContent& c ) {
+                          QLabel* l = new QLabel( QString::fromStdString( c.text ), card_frame_ );
+                          l->setWordWrap( true );
+                          l->setAlignment( Qt::AlignCenter );
+                          l->setStyleSheet(
+                              "font-size: 24px; font-weight: bold; color: #ffffff; border: none;" );
+                          question_layout_->addWidget( l );
+                      },
+                       [&]( const ImageContent& c ) {
+                           QLabel* imgLabel = new QLabel( card_frame_ );
+                           imgLabel->setAlignment( Qt::AlignCenter );
+
+                           QString path = getMediaPath( c.image_path );
+
+                           QPixmap pix( path );
+                           if ( !pix.isNull() ) {
+                               imgLabel->setPixmap( pix.scaled( 500, 350, Qt::KeepAspectRatio,
+                                                                Qt::SmoothTransformation ) );
+                           } else {
+                               qDebug() << "Błąd ładowania obrazka ze ścieżki:" << path;
+                               imgLabel->setText( "[Błąd ładowania obrazka]\n" + path );
+                               imgLabel->setStyleSheet( "color: #e53935; font-weight: bold;" );
+                           }
+                           question_layout_->addWidget( imgLabel );
+                       },
+                       [&]( const SoundContent& c ) {
+                           QPushButton* btn = new QPushButton( "▶ Odtwórz dźwięk", card_frame_ );
+                           btn->setFixedSize( 200, 60 );
+                           btn->setStyleSheet( "font-size: 16px;" );
+                           // to-do: implement sound playback
+                           question_layout_->addWidget( btn );
+                           QLabel* info = new QLabel(
+                               "(Dźwięk: " + QString::fromStdString( c.sound_path ) + ")",
+                               card_frame_ );
+                           info->setStyleSheet( "color: #888; border: none;" );
+                           question_layout_->addWidget( info );
+                       } },
            questionPayload );
 }
 

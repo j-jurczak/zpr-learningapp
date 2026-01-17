@@ -6,79 +6,78 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QDebug>
 
 #include "JsonImportStrategy.h"
+#include "../../learning/Card.h"
 
 using namespace std;
 
-bool JsonImportStrategy::import( const QString& filepath, DatabaseManager& db,
-                                 QString& error_msg ) {
-    QFile file( filepath );
+bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
+                                 QString& set_name_out ) {
+    QFile file( file_path );
     if ( !file.open( QIODevice::ReadOnly ) ) {
-        error_msg = "Cannot open file: " + filepath;
+        qCritical() << "Could not open file:" << file_path;
         return false;
     }
 
     QByteArray data = file.readAll();
     file.close();
 
-    QJsonParseError parse_err;
-    QJsonDocument doc = QJsonDocument::fromJson( data, &parse_err );
-
-    if ( parse_err.error != QJsonParseError::NoError ) {
-        error_msg = "Error parsing JSON: " + parse_err.errorString();
-        return false;
-    }
-
-    if ( !doc.isObject() ) {
-        error_msg = "JSON must be an object.";
+    QJsonDocument doc = QJsonDocument::fromJson( data );
+    if ( doc.isNull() ) {
+        qCritical() << "Invalid JSON file.";
         return false;
     }
 
     QJsonObject root = doc.object();
 
-    if ( !root.contains( "name" ) || !root["name"].isString() ) {
-        error_msg = "Missing field 'name'.";
-        return false;
+    if ( root.contains( "name" ) && root["name"].isString() ) {
+        set_name_out = root["name"].toString();
+    } else {
+        set_name_out = "Importowany Zestaw";
     }
-    string set_name = root["name"].toString().toStdString();
 
     if ( !root.contains( "cards" ) || !root["cards"].isArray() ) {
-        error_msg = "Missing field 'cards'.";
+        qCritical() << "JSON does not contain 'cards' array.";
         return false;
     }
 
-    vector<DraftCard> cards_to_import;
     QJsonArray cards_array = root["cards"].toArray();
+    vector<DraftCard> cards_to_import;
 
     for ( const auto& val : cards_array ) {
-        if ( !val.isObject() ) continue;
-        QJsonObject card_obj = val.toObject();
+        QJsonObject obj = val.toObject();
 
-        if ( !card_obj.contains( "question" ) || !card_obj.contains( "correct" ) ) continue;
-
-        string q = card_obj["question"].toString().toStdString();
-        string c = card_obj["correct"].toString().toStdString();
+        string q_str = obj["question"].toString().toStdString();
+        string c_str = obj["correct_answer"].toString().toStdString();
 
         vector<string> wrongs;
-        if ( card_obj.contains( "wrong" ) && card_obj["wrong"].isArray() ) {
-            QJsonArray wrong_arr = card_obj["wrong"].toArray();
-            for ( const auto& w : wrong_arr ) {
+        if ( obj.contains( "wrong_answers" ) && obj["wrong_answers"].isArray() ) {
+            QJsonArray w_arr = obj["wrong_answers"].toArray();
+            for ( const auto& w : w_arr ) {
                 wrongs.push_back( w.toString().toStdString() );
             }
         }
-        cards_to_import.push_back( { q, c, wrongs } );
+
+        DraftCard draft;
+
+        draft.question = TextContent{ q_str };
+
+        draft.correct_answer = c_str;
+        draft.wrong_answers = wrongs;
+
+        if ( !wrongs.empty() ) {
+            draft.answer_type = AnswerType::TEXT_CHOICE;
+        } else {
+            draft.answer_type = AnswerType::FLASHCARD;
+        }
+
+        cards_to_import.push_back( draft );
     }
 
     if ( cards_to_import.empty() ) {
-        error_msg = "No valid cards to import.";
         return false;
     }
-
-    if ( !db.createSet( set_name, cards_to_import ) ) {
-        error_msg = "Database error.";
-        return false;
-    }
-
-    return true;
+    return db.createSet( set_name_out.toStdString(), cards_to_import );
 }

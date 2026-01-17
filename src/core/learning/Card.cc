@@ -4,49 +4,44 @@
  */
 #include <algorithm>
 #include <cctype>
-#include <random>
 
 #include "Card.h"
-#include "../utils/Overloaded.h"
 
 using namespace std;
 
-Card::Card( int id, int set_id, CardData data, MediaType media )
-    : id_( id ), set_id_( set_id ), media_type_( media ), data_( move( data ) ) {}
-
-bool Card::areStringsEqual( string_view a, string_view b ) {
-    if ( a.size() != b.size() ) {
-        return false;
+Card::Card( const CardData& data ) : data_( data ) {
+    if ( holds_alternative<ImageContent>( data_.question ) ) {
+        media_type_ = MediaType::IMAGE;
+    } else if ( holds_alternative<SoundContent>( data_.question ) ) {
+        media_type_ = MediaType::SOUND;
+    } else {
+        media_type_ = MediaType::TEXT;
     }
-    return equal( a.begin(), a.end(), b.begin(), []( unsigned char c1, unsigned char c2 ) {
-        return tolower( c1 ) == tolower( c2 );
-    } );
 }
 
 bool Card::checkAnswer( string_view user_answer ) const {
     return areStringsEqual( user_answer, data_.correct_answer );
 }
 
-const string& Card::getCorrectAnswer() const { return data_.correct_answer; }
-
 vector<string> Card::getChoices() const {
-    if ( data_.wrong_answers.empty() ) {
-        return {};
-    }
-    vector<string> all = data_.wrong_answers;
-    all.push_back( data_.correct_answer );
-
-    static random_device rd;
-    static mt19937 rng( rd() );
-    shuffle( all.begin(), all.end(), rng );
-    return all;
+    vector<string> choices = data_.wrong_answers;
+    choices.push_back( data_.correct_answer );
+    return choices;
 }
 
 string Card::getQuestion() const {
-    return visit( overloaded{ []( const TextContent& c ) { return c.text; },
-                              []( const ImageContent& c ) { return c.image_path; },
-                              []( const SoundContent& c ) { return c.sound_path; } },
-                  data_.question );
+    if ( holds_alternative<TextContent>( data_.question ) ) {
+        return get<TextContent>( data_.question ).text;
+    }
+    return "[Media Content]";
 }
 
-bool Card::isChoiceCard() const { return !data_.wrong_answers.empty(); }
+bool Card::isChoiceCard() const {
+    return !data_.wrong_answers.empty() || data_.answer_type == AnswerType::TEXT_CHOICE ||
+           data_.answer_type == AnswerType::IMAGE_CHOICE;
+}
+
+bool Card::areStringsEqual( string_view a, string_view b ) {
+    return equal( a.begin(), a.end(), b.begin(), b.end(),
+                  []( char a, char b ) { return tolower( a ) == tolower( b ); } );
+}

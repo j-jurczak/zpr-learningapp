@@ -10,6 +10,9 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QDate>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <variant>
 
 #include "DatabaseManager.h"
 
@@ -122,9 +125,7 @@ void DatabaseManager::seedData() {
     };
 
     insertCard( "Pies", "Dog", "", 0, 0 );
-
     insertCard( "Kot", "Cat", "", 4, 0 );
-
     insertCard( "Kolor nieba?", "Blue", "Red;Green;Yellow", 1, 0 );
     insertCard( "'Chicken' to po polsku...", "Kurczak", "Indyk;Kaczka;Gęś", 1, 0 );
 }
@@ -285,31 +286,44 @@ bool DatabaseManager::deleteSet( int set_id ) {
 }
 
 // insert query to add a single card to an existing set
-bool DatabaseManager::addCardToSet( int set_id, const DraftCard& card ) {
+bool DatabaseManager::addCardToSet( int set_id, const DraftCard& draft ) {
     QSqlQuery query;
     query.prepare(
-        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, media_type, "
-        "answer_type) "
-        "VALUES (:sid, :q, :a, :w, :mtype, :atype)" );
+        "INSERT INTO cards (set_id, question, correct_answer, wrong_answers, answer_type, "
+        "media_type) "
+        "VALUES (:set_id, :question, :correct, :wrong, :ans_type, :media_type)" );
 
-    QString wrong_str = "";
-    if ( !card.wrong_answers.empty() ) {
-        QStringList wrong_list;
-        for ( const auto& wa : card.wrong_answers ) {
-            wrong_list << QString::fromStdString( wa );
-        }
-        wrong_str = wrong_list.join( ";" );
+    query.bindValue( ":set_id", set_id );
+
+    string q_text;
+    int media_type_int = 0;
+
+    if ( holds_alternative<TextContent>( draft.question ) ) {
+        q_text = get<TextContent>( draft.question ).text;
+        media_type_int = 0;
+    } else if ( holds_alternative<ImageContent>( draft.question ) ) {
+        q_text = get<ImageContent>( draft.question ).image_path;
+        media_type_int = 1;
+    } else if ( holds_alternative<SoundContent>( draft.question ) ) {
+        q_text = get<SoundContent>( draft.question ).sound_path;
+        media_type_int = 2;
     }
 
-    query.bindValue( ":sid", set_id );
-    query.bindValue( ":q", QString::fromStdString( card.question ) );
-    query.bindValue( ":a", QString::fromStdString( card.correct_answer ) );
-    query.bindValue( ":w", wrong_str );
-    query.bindValue( ":mtype", static_cast<int>( card.media_type ) );
-    query.bindValue( ":atype", static_cast<int>( card.answer_type ) );
+    query.bindValue( ":question", QString::fromStdString( q_text ) );
+    query.bindValue( ":media_type", media_type_int );
+
+    query.bindValue( ":correct", QString::fromStdString( draft.correct_answer ) );
+    QJsonArray wrong_arr;
+    for ( const auto& w : draft.wrong_answers ) {
+        wrong_arr.append( QString::fromStdString( w ) );
+    }
+    QJsonDocument doc( wrong_arr );
+    query.bindValue( ":wrong", doc.toJson( QJsonDocument::Compact ) );
+
+    query.bindValue( ":ans_type", (int)draft.answer_type );
 
     if ( !query.exec() ) {
-        qCritical() << "Error adding single card:" << query.lastError().text();
+        qCritical() << "AddCard Error:" << query.lastError().text();
         return false;
     }
     return true;
@@ -371,6 +385,7 @@ string DatabaseManager::calculateNextDate( int days_from_now ) {
     return QDate::currentDate().addDays( days_from_now ).toString( "yyyy-MM-dd" ).toStdString();
 }
 
+// helper function to execute card retrieval queries
 vector<Card> DatabaseManager::getCardsWithQuery( const QString& sql, int set_id, int limit ) const {
     vector<Card> cards;
     QSqlQuery query;
@@ -384,40 +399,37 @@ vector<Card> DatabaseManager::getCardsWithQuery( const QString& sql, int set_id,
     }
 
     while ( query.next() ) {
-        int id = query.value( "id" ).toInt();
-        int sid = query.value( "set_id" ).toInt();
-
-        string q_str = query.value( "question" ).toString().toStdString();
-        string a_str = query.value( "correct_answer" ).toString().toStdString();
-        QString w_raw = query.value( "wrong_answers" ).toString();
-        int m_val = query.value( "media_type" ).toInt();
-        int a_val = query.value( "answer_type" ).toInt();
-
-        MediaType m_type = static_cast<MediaType>( m_val );
-        AnswerType a_type = static_cast<AnswerType>( a_val );
-
         CardData data;
-        data.correct_answer = a_str;
-        data.answer_type = a_type;
+        data.id = query.value( "id" ).toInt();
+        data.set_id = query.value( "set_id" ).toInt();
+        data.correct_answer = query.value( "correct_answer" ).toString().toStdString();
+        data.answer_type = (AnswerType)query.value( "answer_type" ).toInt();
 
-        if ( !w_raw.isEmpty() ) {
+        int m_val = query.value( "media_type" ).toInt();
+        string q_str = query.value( "question" ).toString().toStdString();
+
+        if ( m_val == 1 ) {
+            data.question = ImageContent{ q_str };
+        } else if ( m_val == 2 ) {
+            data.question = SoundContent{ q_str };
+        } else {
+            data.question = TextContent{ q_str };
+        }
+
+        QString w_raw = query.value( "wrong_answers" ).toString();
+
+        QJsonDocument doc = QJsonDocument::fromJson( w_raw.toUtf8() );
+        if ( !doc.isNull() && doc.isArray() ) {
+            QJsonArray arr = doc.array();
+            for ( const auto& val : arr ) {
+                data.wrong_answers.push_back( val.toString().toStdString() );
+            }
+        } else if ( !w_raw.isEmpty() ) {
             for ( const auto& part : w_raw.split( ';', Qt::SkipEmptyParts ) ) {
                 data.wrong_answers.push_back( part.toStdString() );
             }
         }
-        switch ( m_type ) {
-            case MediaType::IMAGE:
-                data.question = ImageContent{ q_str };
-                break;
-            case MediaType::SOUND:
-                data.question = SoundContent{ q_str };
-                break;
-            case MediaType::TEXT:
-            default:
-                data.question = TextContent{ q_str };
-                break;
-        }
-        cards.emplace_back( id, sid, move( data ), m_type );
+        cards.emplace_back( data );
     }
     return cards;
 }
