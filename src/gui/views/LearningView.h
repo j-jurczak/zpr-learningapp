@@ -11,6 +11,8 @@
 #include <QProgressBar>
 #include <QFrame>
 #include <QLineEdit>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 #include "../../core/learning/LearningSession.h"
 #include "../../db/DatabaseManager.h"
@@ -59,4 +61,8 @@ private:
 
     QWidget* bottom_controls_container_;
     QHBoxLayout* bottom_controls_layout_;
+
+    QMediaPlayer* player_;
+    QAudioOutput* audio_output_;
+    void ensureAudioInitialized();
 };

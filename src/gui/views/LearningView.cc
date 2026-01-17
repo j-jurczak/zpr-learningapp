@@ -32,6 +32,19 @@ LearningView::LearningView( DatabaseManager& db, QWidget* parent )
     setupUi();
 }
 
+void LearningView::ensureAudioInitialized() {
+    if ( player_ ) return;
+    player_ = new QMediaPlayer( this );
+    audio_output_ = new QAudioOutput( this );
+    player_->setAudioOutput( audio_output_ );
+    audio_output_->setVolume( 1.0 );
+
+    connect( player_, &QMediaPlayer::errorOccurred, this,
+             []( QMediaPlayer::Error error, const QString& errorString ) {
+                 qCritical() << "Error with QMediaPlayer:" << errorString;
+             } );
+}
+
 void LearningView::startSession( int set_id, LearningMode mode ) {
     current_mode_ = mode;
     unique_ptr<ICardSelectionStrategy> strategy;
@@ -145,6 +158,10 @@ void LearningView::setupUi() {
 }
 
 void LearningView::loadCurrentCard() {
+    if ( player_ ) {
+        player_->stop();
+        player_->setSource( QUrl() );
+    }
     try {
         const Card& card = session_.getCurrentCard();
         clearLayout( question_layout_ );
@@ -298,7 +315,8 @@ void LearningView::renderQuizView( const CardData& data ) {
         btn->setMinimumHeight( 50 );
         btn->setStyleSheet(
             "QPushButton { background-color: #3e3e42; color: white; font-size: 16px; "
-            "border-radius: 5px; border: 1px solid #555; text-align: left; padding-left: 15px; }"
+            "border-radius: 5px; border: 1px solid #555; text-align: left; padding-left: 15px; "
+            "}"
             "QPushButton:hover { background-color: #4e4e52; }" );
 
         connect( btn, &QPushButton::clicked, this,
@@ -432,7 +450,8 @@ void LearningView::onInputChecked() {
 
     if ( is_correct ) {
         input->setStyleSheet(
-            "padding: 10px; font-size: 16px; color: white; background: #2e7d32; border: 1px solid "
+            "padding: 10px; font-size: 16px; color: white; background: #2e7d32; border: 1px "
+            "solid "
             "#2e7d32; border-radius: 5px;" );
 
         if ( current_mode_ == LearningMode::SpacedRepetition ) {
@@ -449,7 +468,8 @@ void LearningView::onInputChecked() {
         }
     } else {
         input->setStyleSheet(
-            "padding: 10px; font-size: 16px; color: white; background: #c62828; border: 1px solid "
+            "padding: 10px; font-size: 16px; color: white; background: #c62828; border: 1px "
+            "solid "
             "#c62828; border-radius: 5px;" );
 
         QLabel* correction = new QLabel( tr( "Correct: " ) + correct_text, interaction_container_ );
