@@ -14,14 +14,12 @@ void LanguageManager::loadLanguage( const QString& langCode ) {
         m_translator = new QTranslator( qApp );
     }
 
-    // Always remove existing translator to ensure clean state
     qApp->removeTranslator( m_translator );
 
     if ( langCode == "en" ) {
         return;
     }
 
-    // Construct path to translations directory
     QString translationPath = QString( PROJECT_ROOT ) + "/src/translations";
     QString filename = "learningapp_" + langCode;
 
