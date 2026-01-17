@@ -45,7 +45,7 @@ void AddCardOverlay::setupUi() {
     dialog_layout->setContentsMargins( 30, 30, 30, 30 );
     dialog_layout->setSpacing( 15 );
 
-    QLabel* title = new QLabel( "Nowa Karta", dialog );
+    QLabel* title = new QLabel( tr( "New Card" ), dialog );
     title->setStyleSheet(
         "font-size: 24px; font-weight: bold; color: white; border: none; margin-bottom: 10px;" );
     dialog_layout->addWidget( title );
@@ -53,41 +53,41 @@ void AddCardOverlay::setupUi() {
     QHBoxLayout* type_layout = new QHBoxLayout();
 
     QVBoxLayout* q_type_box = new QVBoxLayout();
-    q_type_box->addWidget( new QLabel( "Typ Pytania:", dialog ) );
+    q_type_box->addWidget( new QLabel( tr( "Question Type:" ), dialog ) );
     combo_question_type_ = new QComboBox( dialog );
-    combo_question_type_->addItem( "Tekst", 0 );
-    combo_question_type_->addItem( "Obrazek", 1 );
-    combo_question_type_->addItem( "Dźwięk", 2 );
+    combo_question_type_->addItem( tr( "Text" ), 0 );
+    combo_question_type_->addItem( tr( "Image" ), 1 );
+    combo_question_type_->addItem( tr( "Sound" ), 2 );
     q_type_box->addWidget( combo_question_type_ );
     type_layout->addLayout( q_type_box );
 
     QVBoxLayout* a_type_box = new QVBoxLayout();
-    a_type_box->addWidget( new QLabel( "Typ Odpowiedzi:", dialog ) );
+    a_type_box->addWidget( new QLabel( tr( "Answer Type:" ), dialog ) );
     combo_answer_type_ = new QComboBox( dialog );
-    combo_answer_type_->addItem( "Standardowa Fiszka", (int)AnswerType::FLASHCARD );
-    combo_answer_type_->addItem( "Quiz (Wybór)", (int)AnswerType::TEXT_CHOICE );
-    combo_answer_type_->addItem( "Wpisywanie (Input)", (int)AnswerType::INPUT );
+    combo_answer_type_->addItem( tr( "Flashcard" ), (int)AnswerType::FLASHCARD );
+    combo_answer_type_->addItem( tr( "Quiz (Choice)" ), (int)AnswerType::TEXT_CHOICE );
+    combo_answer_type_->addItem( tr( "Typing (Input)" ), (int)AnswerType::INPUT );
     a_type_box->addWidget( combo_answer_type_ );
     type_layout->addLayout( a_type_box );
 
     dialog_layout->addLayout( type_layout );
 
-    dialog_layout->addWidget( new QLabel( "Treść Pytania:", dialog ) );
+    dialog_layout->addWidget( new QLabel( tr( "Question Content:" ), dialog ) );
 
     stack_question_content_ = new QStackedWidget( dialog );
     stack_question_content_->setStyleSheet( "border: none;" );
     stack_question_content_->setFixedHeight( 150 );
 
     input_question_text_ = new QTextEdit( stack_question_content_ );
-    input_question_text_->setPlaceholderText( "Wpisz pytanie..." );
+    input_question_text_->setPlaceholderText( tr( "Enter question..." ) );
     input_question_text_->setStyleSheet(
         "background-color: #252526; color: white; border: 1px solid #3e3e42; padding: 10px;" );
     stack_question_content_->addWidget( input_question_text_ );
 
     page_image_ = new QWidget( stack_question_content_ );
     QVBoxLayout* img_layout = new QVBoxLayout( page_image_ );
-    btn_select_image_ = new QPushButton( "Wybierz obrazek...", page_image_ );
-    label_image_preview_ = new QLabel( "Brak obrazka", page_image_ );
+    btn_select_image_ = new QPushButton( tr( "Choose image..." ), page_image_ );
+    label_image_preview_ = new QLabel( tr( "No image selected" ), page_image_ );
     label_image_preview_->setAlignment( Qt::AlignCenter );
     label_image_preview_->setStyleSheet( "color: #888; border: 1px dashed #555;" );
     img_layout->addWidget( btn_select_image_ );
@@ -96,8 +96,8 @@ void AddCardOverlay::setupUi() {
 
     page_sound_ = new QWidget( stack_question_content_ );
     QVBoxLayout* snd_layout = new QVBoxLayout( page_sound_ );
-    btn_select_sound_ = new QPushButton( "Wybierz plik audio...", page_sound_ );
-    label_sound_info_ = new QLabel( "Brak dźwięku", page_sound_ );
+    btn_select_sound_ = new QPushButton( tr( "Choose audio..." ), page_sound_ );
+    label_sound_info_ = new QLabel( tr( "No sound selected" ), page_sound_ );
     label_sound_info_->setAlignment( Qt::AlignCenter );
     label_sound_info_->setStyleSheet( "color: #888; border: 1px dashed #555;" );
     snd_layout->addWidget( btn_select_sound_ );
@@ -106,9 +106,9 @@ void AddCardOverlay::setupUi() {
 
     dialog_layout->addWidget( stack_question_content_ );
 
-    dialog_layout->addWidget( new QLabel( "Poprawna Odpowiedź:", dialog ) );
+    dialog_layout->addWidget( new QLabel( tr( "Correct Answer:" ), dialog ) );
     input_correct_answer_ = new QLineEdit( dialog );
-    input_correct_answer_->setPlaceholderText( "Np. Pies, Dog, 1944..." );
+    input_correct_answer_->setPlaceholderText( tr( "E.g. Dog, 1944..." ) );
     input_correct_answer_->setStyleSheet(
         "padding: 8px; background-color: #252526; color: white; border: 1px solid #3e3e42;" );
     dialog_layout->addWidget( input_correct_answer_ );
@@ -117,13 +117,13 @@ void AddCardOverlay::setupUi() {
     QVBoxLayout* quiz_layout = new QVBoxLayout( quiz_container_ );
     quiz_layout->setContentsMargins( 0, 0, 0, 0 );
 
-    quiz_layout->addWidget( new QLabel( "Błędne odpowiedzi (Dystraktory):", quiz_container_ ) );
+    quiz_layout->addWidget( new QLabel( tr( "Wrong answers (Distractors):" ), quiz_container_ ) );
     input_wrong1_ = new QLineEdit( quiz_container_ );
-    input_wrong1_->setPlaceholderText( "Błędna opcja 1" );
+    input_wrong1_->setPlaceholderText( tr( "Wrong option 1" ) );
     input_wrong2_ = new QLineEdit( quiz_container_ );
-    input_wrong2_->setPlaceholderText( "Błędna opcja 2" );
+    input_wrong2_->setPlaceholderText( tr( "Wrong option 2" ) );
     input_wrong3_ = new QLineEdit( quiz_container_ );
-    input_wrong3_->setPlaceholderText( "Błędna opcja 3" );
+    input_wrong3_->setPlaceholderText( tr( "Wrong option 3" ) );
 
     QString q_style =
         "padding: 6px; background-color: #252526; color: #ccc; border: 1px solid #3e3e42;";
@@ -141,8 +141,8 @@ void AddCardOverlay::setupUi() {
     dialog_layout->addStretch();
 
     QHBoxLayout* btn_layout = new QHBoxLayout();
-    btn_cancel_ = new QPushButton( "Anuluj", dialog );
-    btn_save_ = new QPushButton( "Zapisz", dialog );
+    btn_cancel_ = new QPushButton( tr( "Cancel" ), dialog );
+    btn_save_ = new QPushButton( tr( "Save" ), dialog );
 
     btn_cancel_->setCursor( Qt::PointingHandCursor );
     btn_save_->setCursor( Qt::PointingHandCursor );
@@ -176,7 +176,7 @@ void AddCardOverlay::setupConnections() {
     connect( btn_save_, &QPushButton::clicked, this, [this]() {
         QString correct = input_correct_answer_->text().trimmed();
         if ( correct.isEmpty() ) {
-            QMessageBox::warning( this, "Błąd", "Musisz wpisać poprawną odpowiedź!" );
+            QMessageBox::warning( this, tr( "Error" ), tr( "You must enter a correct answer!" ) );
             return;
         }
 
@@ -188,13 +188,13 @@ void AddCardOverlay::setupConnections() {
         if ( q_type == 0 ) {
             QString txt = input_question_text_->toPlainText().trimmed();
             if ( txt.isEmpty() ) {
-                QMessageBox::warning( this, "Błąd", "Treść pytania nie może być pusta!" );
+                QMessageBox::warning( this, tr( "Error" ), tr( "Question cannot be empty!" ) );
                 return;
             }
             draft.question = TextContent{ txt.toStdString() };
         } else if ( q_type == 1 ) {
             if ( selected_image_path_.isEmpty() ) {
-                QMessageBox::warning( this, "Błąd", "Musisz wybrać plik obrazka!" );
+                QMessageBox::warning( this, tr( "Error" ), tr( "You must select an image!" ) );
                 return;
             }
             QString final_name = copyFileToMedia( selected_image_path_, "images" );
@@ -202,7 +202,7 @@ void AddCardOverlay::setupConnections() {
             draft.question = ImageContent{ final_name.toStdString() };
         } else if ( q_type == 2 ) {
             if ( selected_sound_path_.isEmpty() ) {
-                QMessageBox::warning( this, "Błąd", "Musisz wybrać plik dźwiękowy!" );
+                QMessageBox::warning( this, tr( "Error" ), tr( "You must select an audio file!" ) );
                 return;
             }
             QString final_name = copyFileToMedia( selected_sound_path_, "sounds" );
@@ -218,9 +218,9 @@ void AddCardOverlay::setupConnections() {
                 draft.wrong_answers.push_back( input_wrong3_->text().toStdString() );
 
             if ( draft.wrong_answers.empty() ) {
-                QMessageBox::warning( this, "Uwaga",
-                                      "Wybrałeś tryb Quizu, ale nie podałeś błędnych odpowiedzi. "
-                                      "Karta zadziała, ale będzie łatwa!" );
+                QMessageBox::warning( this, tr( "Warning" ),
+                                      tr( "You selected Quiz mode but didn't provide wrong "
+                                          "answers. The card will work but will be easy!" ) );
             }
         }
 
@@ -244,12 +244,12 @@ void AddCardOverlay::onAnswerTypeChanged( int index ) {
 void AddCardOverlay::selectImageFile() {
     QString startDir = getRootPath();
 
-    QString path = QFileDialog::getOpenFileName( this, "Wybierz Obraz", startDir,
-                                                 "Obrazy (*.png *.jpg *.jpeg *.bmp)" );
+    QString path = QFileDialog::getOpenFileName( this, tr( "Choose Image" ), startDir,
+                                                 tr( "Images (*.png *.jpg *.jpeg *.bmp)" ) );
     if ( !path.isEmpty() ) {
         selected_image_path_ = path;
         QFileInfo fi( path );
-        label_image_preview_->setText( "Wybrano: " + fi.fileName() );
+        label_image_preview_->setText( tr( "Selected: " ) + fi.fileName() );
         label_image_preview_->setStyleSheet(
             "color: #4caf50; border: 1px solid #4caf50; font-weight: bold;" );
     }
@@ -258,12 +258,12 @@ void AddCardOverlay::selectImageFile() {
 void AddCardOverlay::selectSoundFile() {
     QString startDir = getRootPath();
 
-    QString path = QFileDialog::getOpenFileName( this, "Wybierz Dźwięk", startDir,
-                                                 "Audio (*.mp3 *.wav *.ogg)" );
+    QString path = QFileDialog::getOpenFileName( this, tr( "Choose Audio" ), startDir,
+                                                 tr( "Audio (*.mp3 *.wav *.ogg)" ) );
     if ( !path.isEmpty() ) {
         selected_sound_path_ = path;
         QFileInfo fi( path );
-        label_sound_info_->setText( "Wybrano: " + fi.fileName() );
+        label_sound_info_->setText( tr( "Selected: " ) + fi.fileName() );
         label_sound_info_->setStyleSheet(
             "color: #4caf50; border: 1px solid #4caf50; font-weight: bold;" );
     }
@@ -295,9 +295,9 @@ QString AddCardOverlay::copyFileToMedia( const QString& sourcePath, const string
         return QString::fromStdString( subfolder ) + "/" + newName;
     } else {
         qCritical() << "Błąd kopiowania pliku!";
-        QMessageBox::critical( this, "Błąd zapisu",
-                               "Nie udało się skopiować pliku do folderu aplikacji!\n"
-                               "Ścieżka zapisu: " +
+        QMessageBox::critical( this, tr( "Save Error" ),
+                               tr( "Could not copy file to app directory!\n"
+                                   "Destination: " ) +
                                    destPath );
         return "";
     }

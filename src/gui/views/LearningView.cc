@@ -68,13 +68,13 @@ void LearningView::startSession( int set_id, LearningMode mode ) {
 
         QTimer::singleShot( 0, this, [this, is_sm2_empty]() {
             if ( is_sm2_empty ) {
-                QMessageBox::information( this, "Gratulacje!",
-                                          "Na dzisiaj to wszystko! \nAlgorytm SM-2 nie przewiduje "
-                                          "więcej powtórek na teraz.\n\n"
-                                          "Jeśli chcesz uczyć się dalej, wybierz tryb 'Szybka "
-                                          "powtórka' lub zresetuj postępy w menu." );
+                QMessageBox::information( this, tr( "Congratulations!" ),
+                                          tr( "That's all for today! \nSM-2 algorithm does not predict "
+                                          "more reviews for now.\n\n"
+                                          "If you want to continue learning, choose 'Quick Review' mode "
+                                          "or reset progress in the menu." ) );
             } else {
-                QMessageBox::warning( this, "Pusto", "Ten zestaw nie zawiera żadnych kart!" );
+                QMessageBox::warning( this, tr( "Empty" ), tr( "This set contains no cards!" ) );
             }
             emit sessionFinished();
         } );
@@ -96,12 +96,12 @@ void LearningView::setupUi() {
         "bold; font-size: 18px; border: 1px solid #555; }"
         "QPushButton:hover { background-color: #c62828; color: white; border: 1px solid #c62828; "
         "}" );
-    btn_exit->setToolTip( "Przerwij sesję i wyjdź" );
+    btn_exit->setToolTip( tr( "Interrupt session and exit" ) );
 
     connect( btn_exit, &QPushButton::clicked, this, [this]() {
         auto reply = QMessageBox::question(
-            this, "Przerwij sesję",
-            "Czy na pewno chcesz zakończyć sesję? Twoje dotychczasowe postępy są już zapisane.",
+            this, tr( "Interrupt session" ),
+            tr( "Are you sure you want to end the session? Your progress is saved." ),
             QMessageBox::Yes | QMessageBox::No );
 
         if ( reply == QMessageBox::Yes ) {
@@ -180,20 +180,20 @@ void LearningView::renderQuestion( const Card& card ) {
                                imgLabel->setPixmap( pix.scaled( 500, 350, Qt::KeepAspectRatio,
                                                                 Qt::SmoothTransformation ) );
                            } else {
-                               qDebug() << "Błąd ładowania obrazka ze ścieżki:" << path;
-                               imgLabel->setText( "[Błąd ładowania obrazka]\n" + path );
+                               qDebug() << "Image load error:" << path;
+                               imgLabel->setText( tr( "[Image load error]\n" ) + path );
                                imgLabel->setStyleSheet( "color: #e53935; font-weight: bold;" );
                            }
                            question_layout_->addWidget( imgLabel );
                        },
                        [&]( const SoundContent& c ) {
-                           QPushButton* btn = new QPushButton( "▶ Odtwórz dźwięk", card_frame_ );
+                           QPushButton* btn = new QPushButton( "▶ " + tr( "Play sound" ), card_frame_ );
                            btn->setFixedSize( 200, 60 );
                            btn->setStyleSheet( "font-size: 16px;" );
                            // to-do: implement sound playback
                            question_layout_->addWidget( btn );
                            QLabel* info = new QLabel(
-                               "(Dźwięk: " + QString::fromStdString( c.sound_path ) + ")",
+                               tr( "(Sound: " ) + QString::fromStdString( c.sound_path ) + ")",
                                card_frame_ );
                            info->setStyleSheet( "color: #888; border: none;" );
                            question_layout_->addWidget( info );
@@ -276,7 +276,7 @@ void LearningView::renderInteraction( const Card& card ) {
 }
 
 void LearningView::renderFlashcardView( const CardData& data ) {
-    QPushButton* btn_show = new QPushButton( "Pokaż odpowiedź", interaction_container_ );
+    QPushButton* btn_show = new QPushButton( tr( "Show answer" ), interaction_container_ );
     btn_show->setCursor( Qt::PointingHandCursor );
     btn_show->setMinimumHeight( 50 );
     btn_show->setStyleSheet(
@@ -308,7 +308,7 @@ void LearningView::renderQuizView( const CardData& data ) {
 
 void LearningView::renderInputView( const CardData& data ) {
     QLineEdit* input = new QLineEdit( interaction_container_ );
-    input->setPlaceholderText( "Wpisz odpowiedź..." );
+    input->setPlaceholderText( tr( "Enter answer..." ) );
     input->setStyleSheet(
         "padding: 10px; font-size: 16px; color: white; background: #3e3e42; border: 1px solid "
         "#555; border-radius: 5px;" );
@@ -317,7 +317,7 @@ void LearningView::renderInputView( const CardData& data ) {
     connect( input, &QLineEdit::returnPressed, this, &LearningView::onInputChecked );
     interaction_layout_->addWidget( input );
 
-    QPushButton* btn_check = new QPushButton( "Sprawdź", interaction_container_ );
+    QPushButton* btn_check = new QPushButton( tr( "Check" ), interaction_container_ );
     btn_check->setCursor( Qt::PointingHandCursor );
     btn_check->setMinimumHeight( 50 );
     btn_check->setStyleSheet(
@@ -345,7 +345,7 @@ void LearningView::onShowAnswerClicked() {
         clearLayout( bottom_controls_layout_ );
         bottom_controls_container_->show();
 
-        QPushButton* btn_next = new QPushButton( "Dalej", bottom_controls_container_ );
+        QPushButton* btn_next = new QPushButton( tr( "Next" ), bottom_controls_container_ );
         btn_next->setCursor( Qt::PointingHandCursor );
         btn_next->setMinimumHeight( 50 );
         btn_next->setStyleSheet(
@@ -388,7 +388,7 @@ void LearningView::onChoiceClicked( const QString& answer, QPushButton* senderBt
         clearLayout( bottom_controls_layout_ );
         bottom_controls_container_->show();
 
-        QPushButton* btn_next = new QPushButton( is_correct ? "Dalej (Dobrze!)" : "Dalej (Błąd)",
+        QPushButton* btn_next = new QPushButton( is_correct ? tr( "Next (Good!)" ) : tr( "Next (Wrong)" ),
                                                  bottom_controls_container_ );
         btn_next->setStyleSheet( QString( "background-color: %1; color: white; font-weight: bold; "
                                           "border-radius: 5px; padding: 10px;" )
@@ -437,7 +437,7 @@ void LearningView::onInputChecked() {
             showGradingButtons();
         } else {
             QPushButton* btn_next =
-                new QPushButton( "Dalej (Dobrze!)", bottom_controls_container_ );
+                new QPushButton( tr( "Next (Good!)" ), bottom_controls_container_ );
             btn_next->setStyleSheet(
                 "background-color: #388e3c; color: white; font-weight: bold; padding: 10px; "
                 "border-radius: 5px;" );
@@ -450,14 +450,14 @@ void LearningView::onInputChecked() {
             "padding: 10px; font-size: 16px; color: white; background: #c62828; border: 1px solid "
             "#c62828; border-radius: 5px;" );
 
-        QLabel* correction = new QLabel( "Poprawna: " + correct_text, interaction_container_ );
+        QLabel* correction = new QLabel( tr( "Correct: " ) + correct_text, interaction_container_ );
         correction->setStyleSheet(
             "color: #a5d6a7; font-weight: bold; margin-top: 5px; font-size: 16px;" );
         interaction_layout_->addWidget( correction );
 
         QString fail_btn_text = ( current_mode_ == LearningMode::SpacedRepetition )
-                                    ? "Przejdź do oceny"
-                                    : "Dalej (Błąd)";
+                                    ? tr( "Proceed to grading" )
+                                    : tr( "Next (Wrong)" );
 
         QPushButton* btn_fail = new QPushButton( fail_btn_text, bottom_controls_container_ );
         btn_fail->setStyleSheet(
@@ -473,7 +473,7 @@ void LearningView::onInputChecked() {
         } );
 
         QPushButton* btn_override =
-            new QPushButton( "Uznaj za poprawne", bottom_controls_container_ );
+            new QPushButton( tr( "Mark as correct" ), bottom_controls_container_ );
         btn_override->setStyleSheet(
             "background-color: #f57f17; color: white; font-weight: bold; padding: 10px; "
             "border-radius: 5px;" );
@@ -516,10 +516,10 @@ void LearningView::showGradingButtons() {
         bottom_controls_layout_->addWidget( btn );
     };
 
-    createBtn( "Powtórz (0)", "#d32f2f", 0 );
-    createBtn( "Trudne (3)", "#f57f17", 3 );
-    createBtn( "Dobre (4)", "#388e3c", 4 );
-    createBtn( "Łatwe (5)", "#0288d1", 5 );
+    createBtn( tr( "Again (0)" ), "#d32f2f", 0 );
+    createBtn( tr( "Hard (3)" ), "#f57f17", 3 );
+    createBtn( tr( "Good (4)" ), "#388e3c", 4 );
+    createBtn( tr( "Easy (5)" ), "#0288d1", 5 );
 }
 
 void LearningView::clearLayout( QLayout* layout ) {
@@ -533,6 +533,6 @@ void LearningView::clearLayout( QLayout* layout ) {
 
 void LearningView::showSummary() {
     progress_bar_->setValue( 100 );
-    QMessageBox::information( this, "Koniec", "Sesja zakończona!" );
+    QMessageBox::information( this, tr( "Finished" ), tr( "Session finished!" ) );
     emit sessionFinished();
 }
