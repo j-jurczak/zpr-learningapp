@@ -70,7 +70,7 @@ add_library(GuiLib STATIC
     resources.qrc
 )
 
-target_link_libraries(GuiLib PRIVATE Qt6::Widgets CoreLib)
+target_link_libraries(GuiLib PRIVATE Qt6::Widgets CoreLib Qt6::Multimedia)
 
 add_executable(LearningApp
     Main.cc
