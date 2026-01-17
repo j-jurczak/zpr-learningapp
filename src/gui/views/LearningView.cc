@@ -5,6 +5,10 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QPixmap>
+#include <QSettings>
+#include <QSettings>
+#include <QRandomGenerator>
+#include <QTimer>
 
 #include "LearningView.h"
 #include "../../core/utils/Overloaded.h"
@@ -25,11 +29,9 @@ void LearningView::startSession( int set_id, LearningMode mode ) {
         case LearningMode::SpacedRepetition:
             strategy = make_unique<SpacedRepetitionStrategy>();
             break;
-
         case LearningMode::Random:
             strategy = make_unique<RandomSelectionStrategy>();
             break;
-
         default:
             strategy = make_unique<SpacedRepetitionStrategy>();
             break;
@@ -38,27 +40,75 @@ void LearningView::startSession( int set_id, LearningMode mode ) {
     try {
         // must use std::move because QWidget also has move
         session_.start( set_id, std::move( strategy ), 20 );
+
+        try {
+            session_.getCurrentCard();
+        } catch ( ... ) {
+            throw runtime_error( "EMPTY_SESSION" );
+        }
+
         progress_bar_->setValue( 0 );
         loadCurrentCard();
+
     } catch ( const exception& e ) {
-        QMessageBox::warning( this, "Info", "Brak kart do nauki w tym zestawie!" );
-        emit sessionFinished();
+        string error_msg = e.what();
+        bool is_sm2_empty =
+            ( current_mode_ == LearningMode::SpacedRepetition && error_msg == "EMPTY_SESSION" );
+
+        QTimer::singleShot( 0, this, [this, is_sm2_empty]() {
+            if ( is_sm2_empty ) {
+                QMessageBox::information( this, "Gratulacje!",
+                                          "Na dzisiaj to wszystko! \nAlgorytm SM-2 nie przewiduje "
+                                          "więcej powtórek na teraz.\n\n"
+                                          "Jeśli chcesz uczyć się dalej, wybierz tryb 'Szybka "
+                                          "powtórka' lub zresetuj postępy w menu." );
+            } else {
+                QMessageBox::warning( this, "Pusto", "Ten zestaw nie zawiera żadnych kart!" );
+            }
+            emit sessionFinished();
+        } );
     }
 }
 
 void LearningView::setupUi() {
     QVBoxLayout* main_layout = new QVBoxLayout( this );
-    main_layout->setContentsMargins( 30, 40, 30, 40 );
+    main_layout->setContentsMargins( 30, 20, 30, 40 );
     main_layout->setSpacing( 20 );
+
+    QHBoxLayout* header_layout = new QHBoxLayout();
+
+    QPushButton* btn_exit = new QPushButton( "✕", this );
+    btn_exit->setFixedSize( 40, 40 );
+    btn_exit->setCursor( Qt::PointingHandCursor );
+    btn_exit->setStyleSheet(
+        "QPushButton { background-color: #3e3e42; color: #bbb; border-radius: 20px; font-weight: "
+        "bold; font-size: 18px; border: 1px solid #555; }"
+        "QPushButton:hover { background-color: #c62828; color: white; border: 1px solid #c62828; "
+        "}" );
+    btn_exit->setToolTip( "Przerwij sesję i wyjdź" );
+
+    connect( btn_exit, &QPushButton::clicked, this, [this]() {
+        auto reply = QMessageBox::question(
+            this, "Przerwij sesję",
+            "Czy na pewno chcesz zakończyć sesję? Twoje dotychczasowe postępy są już zapisane.",
+            QMessageBox::Yes | QMessageBox::No );
+
+        if ( reply == QMessageBox::Yes ) {
+            emit sessionFinished();
+        }
+    } );
 
     progress_bar_ = new QProgressBar( this );
     progress_bar_->setTextVisible( false );
-    progress_bar_->setFixedHeight( 6 );
+    progress_bar_->setFixedHeight( 8 );
     progress_bar_->setStyleSheet(
-        "QProgressBar { border: none; background: #333; border-radius: 3px; } QProgressBar::chunk "
-        "{ background: #007acc; border-radius: 3px; }" );
-    main_layout->addWidget( progress_bar_ );
+        "QProgressBar { border: none; background: #333; border-radius: 4px; } QProgressBar::chunk "
+        "{ background: #007acc; border-radius: 4px; }" );
 
+    header_layout->addWidget( btn_exit );
+    header_layout->addWidget( progress_bar_ );
+
+    main_layout->addLayout( header_layout );
     card_frame_ = new QFrame( this );
     card_frame_->setStyleSheet(
         "background-color: #252526; border-radius: 10px; border: 1px solid #3e3e42;" );
@@ -85,17 +135,13 @@ void LearningView::setupUi() {
 void LearningView::loadCurrentCard() {
     try {
         const Card& card = session_.getCurrentCard();
-
         clearLayout( question_layout_ );
         clearLayout( interaction_layout_ );
         clearLayout( bottom_controls_layout_ );
         bottom_controls_container_->hide();
-
         progress_bar_->setValue( static_cast<int>( session_.getProgress() * 100 ) );
-
         renderQuestion( card );
         renderInteraction( card );
-
     } catch ( const exception& e ) {
         showSummary();
     }
@@ -144,7 +190,56 @@ void LearningView::renderQuestion( const Card& card ) {
 
 void LearningView::renderInteraction( const Card& card ) {
     const CardData& data = card.getData();
-    AnswerType mode = data.answer_type;
+    QSettings settings( "ZPR", "LearningApp" );
+    bool allow_quiz = settings.value( "enable_quiz", true ).toBool();
+    bool allow_input = settings.value( "enable_input", true ).toBool();
+    bool random_mode = settings.value( "randomize_simple_cards", false ).toBool();
+    bool has_distractors = !data.wrong_answers.empty();
+    AnswerType db_type = data.answer_type;
+    bool is_text_answer =
+        ( db_type != AnswerType::IMAGE_CHOICE && db_type != AnswerType::SOUND_CHOICE );
+
+    AnswerType mode = db_type;
+    if ( random_mode ) {
+        if ( has_distractors ) {
+            bool can_do_quiz = allow_quiz;
+            bool can_do_input = allow_input && is_text_answer;
+
+            if ( can_do_quiz && can_do_input ) {
+                if ( QRandomGenerator::global()->bounded( 2 ) == 0 ) {
+                    mode = AnswerType::TEXT_CHOICE;
+                } else {
+                    mode = AnswerType::INPUT;
+                }
+            } else if ( can_do_quiz ) {
+                mode = AnswerType::TEXT_CHOICE;
+            } else if ( can_do_input ) {
+                mode = AnswerType::INPUT;
+            } else {
+                mode = AnswerType::FLASHCARD;
+            }
+        } else {
+            if ( allow_input && is_text_answer ) {
+                if ( QRandomGenerator::global()->bounded( 2 ) == 0 ) {
+                    mode = AnswerType::INPUT;
+                } else {
+                    mode = AnswerType::FLASHCARD;
+                }
+            } else {
+                mode = AnswerType::FLASHCARD;
+            }
+        }
+    } else {
+        if ( mode == AnswerType::TEXT_CHOICE || mode == AnswerType::IMAGE_CHOICE ) {
+            if ( !allow_quiz || !has_distractors ) {
+                mode =
+                    ( allow_input && is_text_answer ) ? AnswerType::INPUT : AnswerType::FLASHCARD;
+            }
+        }
+        if ( mode == AnswerType::INPUT && !allow_input ) {
+            mode = AnswerType::FLASHCARD;
+        }
+    }
     switch ( mode ) {
         case AnswerType::INPUT:
             renderInputView( data );
@@ -231,7 +326,23 @@ void LearningView::onShowAnswerClicked() {
     l->setStyleSheet( "font-size: 20px; color: #a5d6a7; font-weight: bold; margin: 20px;" );
     interaction_layout_->addWidget( l );
 
-    showGradingButtons();
+    if ( current_mode_ == LearningMode::SpacedRepetition ) {
+        showGradingButtons();
+    } else {
+        clearLayout( bottom_controls_layout_ );
+        bottom_controls_container_->show();
+
+        QPushButton* btn_next = new QPushButton( "Dalej", bottom_controls_container_ );
+        btn_next->setCursor( Qt::PointingHandCursor );
+        btn_next->setMinimumHeight( 50 );
+        btn_next->setStyleSheet(
+            "background-color: #0078d4; color: white; font-weight: bold; border-radius: 5px;" );
+
+        connect( btn_next, &QPushButton::clicked, this, [this]() { onGradeClicked( 5 ); } );
+
+        bottom_controls_layout_->addWidget( btn_next );
+        btn_next->setFocus();
+    }
 }
 
 void LearningView::onChoiceClicked( const QString& answer, QPushButton* senderBtn ) {
@@ -309,13 +420,18 @@ void LearningView::onInputChecked() {
             "padding: 10px; font-size: 16px; color: white; background: #2e7d32; border: 1px solid "
             "#2e7d32; border-radius: 5px;" );
 
-        QPushButton* btn_next = new QPushButton( "Dalej (Dobrze!)", bottom_controls_container_ );
-        btn_next->setStyleSheet(
-            "background-color: #388e3c; color: white; font-weight: bold; padding: 10px; "
-            "border-radius: 5px;" );
-        connect( btn_next, &QPushButton::clicked, this, [this]() { onGradeClicked( 5 ); } );
-        bottom_controls_layout_->addWidget( btn_next );
-        btn_next->setFocus();
+        if ( current_mode_ == LearningMode::SpacedRepetition ) {
+            showGradingButtons();
+        } else {
+            QPushButton* btn_next =
+                new QPushButton( "Dalej (Dobrze!)", bottom_controls_container_ );
+            btn_next->setStyleSheet(
+                "background-color: #388e3c; color: white; font-weight: bold; padding: 10px; "
+                "border-radius: 5px;" );
+            connect( btn_next, &QPushButton::clicked, this, [this]() { onGradeClicked( 5 ); } );
+            bottom_controls_layout_->addWidget( btn_next );
+            btn_next->setFocus();
+        }
     } else {
         input->setStyleSheet(
             "padding: 10px; font-size: 16px; color: white; background: #c62828; border: 1px solid "
@@ -326,18 +442,36 @@ void LearningView::onInputChecked() {
             "color: #a5d6a7; font-weight: bold; margin-top: 5px; font-size: 16px;" );
         interaction_layout_->addWidget( correction );
 
-        QPushButton* btn_fail = new QPushButton( "Dalej (Błąd)", bottom_controls_container_ );
+        QString fail_btn_text = ( current_mode_ == LearningMode::SpacedRepetition )
+                                    ? "Przejdź do oceny"
+                                    : "Dalej (Błąd)";
+
+        QPushButton* btn_fail = new QPushButton( fail_btn_text, bottom_controls_container_ );
         btn_fail->setStyleSheet(
             "background-color: #d32f2f; color: white; font-weight: bold; padding: 10px; "
             "border-radius: 5px;" );
-        connect( btn_fail, &QPushButton::clicked, this, [this]() { onGradeClicked( 1 ); } );
+
+        connect( btn_fail, &QPushButton::clicked, this, [this]() {
+            if ( current_mode_ == LearningMode::SpacedRepetition ) {
+                showGradingButtons();
+            } else {
+                onGradeClicked( 1 );
+            }
+        } );
 
         QPushButton* btn_override =
             new QPushButton( "Uznaj za poprawne", bottom_controls_container_ );
         btn_override->setStyleSheet(
             "background-color: #f57f17; color: white; font-weight: bold; padding: 10px; "
             "border-radius: 5px;" );
-        connect( btn_override, &QPushButton::clicked, this, [this]() { onGradeClicked( 5 ); } );
+
+        connect( btn_override, &QPushButton::clicked, this, [this]() {
+            if ( current_mode_ == LearningMode::SpacedRepetition ) {
+                showGradingButtons();
+            } else {
+                onGradeClicked( 5 );
+            }
+        } );
 
         bottom_controls_layout_->addWidget( btn_fail );
         bottom_controls_layout_->addWidget( btn_override );

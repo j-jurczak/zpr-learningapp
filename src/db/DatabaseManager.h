@@ -46,6 +46,7 @@ public:
 
     bool updateCardProgress( int card_id, int interval, int repetitions, float easiness,
                              const std::string& next_date );
+    bool resetSetProgress( int set_id );
     static std::string calculateNextDate( int days_from_now );
 
 private:

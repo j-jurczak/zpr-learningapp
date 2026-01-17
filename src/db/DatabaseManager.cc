@@ -250,16 +250,38 @@ bool DatabaseManager::createSet( const string& set_name, const vector<DraftCard>
 
 // delete query to remove a set by id
 bool DatabaseManager::deleteSet( int set_id ) {
+    database_.transaction();
     QSqlQuery query;
+
+    query.prepare(
+        "DELETE FROM learning_progress WHERE card_id IN (SELECT id FROM cards WHERE set_id = "
+        ":id)" );
+    query.bindValue( ":id", set_id );
+    if ( !query.exec() ) {
+        qCritical() << "Failed to delete learning progress for set:" << set_id
+                    << query.lastError().text();
+        database_.rollback();
+        return false;
+    }
+
+    query.prepare( "DELETE FROM cards WHERE set_id = :id" );
+    query.bindValue( ":id", set_id );
+    if ( !query.exec() ) {
+        qCritical() << "Failed to delete cards for set:" << set_id << query.lastError().text();
+        database_.rollback();
+        return false;
+    }
+
     query.prepare( "DELETE FROM sets WHERE id = :id" );
     query.bindValue( ":id", set_id );
-
     if ( !query.exec() ) {
         qCritical() << "Could not delete set ID:" << set_id
                     << " Error:" << query.lastError().text();
+        database_.rollback();
         return false;
     }
-    return true;
+
+    return database_.commit();
 }
 
 // insert query to add a single card to an existing set
@@ -324,6 +346,21 @@ bool DatabaseManager::updateCardProgress( int card_id, int interval, int repetit
 
     if ( !query.exec() ) {
         qCritical() << "Error saving progress:" << query.lastError().text();
+        return false;
+    }
+    return true;
+}
+
+// Clears learning progress for all cards in a set
+bool DatabaseManager::resetSetProgress( int set_id ) {
+    QSqlQuery query;
+    query.prepare(
+        "DELETE FROM learning_progress WHERE card_id IN (SELECT id FROM cards WHERE set_id = "
+        ":id)" );
+    query.bindValue( ":id", set_id );
+
+    if ( !query.exec() ) {
+        qCritical() << "Failed to reset progress:" << query.lastError().text();
         return false;
     }
     return true;

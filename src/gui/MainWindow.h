@@ -19,6 +19,7 @@ private:
     ViewFactory& factory_;
     void setupStyles();
     void setupConnections();
+    bool confirmSessionExit();
 
     QStackedWidget* main_stack_;
 
