@@ -51,7 +51,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
         QFileDialog dialog( nullptr, tr( "Choose set file" ) );
 
         dialog.setDirectory( QDir::homePath() );
-        dialog.setNameFilter( tr( "Data files (*.json *.zip);;All files (*)" ) );
+        dialog.setNameFilter( tr( "Archive files (*.zip);;All files (*)" ) );
         dialog.setFileMode( QFileDialog::ExistingFile );
 
         dialog.setOption( QFileDialog::DontUseNativeDialog, true );
