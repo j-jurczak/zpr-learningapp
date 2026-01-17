@@ -179,45 +179,75 @@ void LearningView::loadCurrentCard() {
 void LearningView::renderQuestion( const Card& card ) {
     const auto& questionPayload = card.getData().question;
 
-    visit( overloaded{ [&]( const TextContent& c ) {
-                          QLabel* l = new QLabel( QString::fromStdString( c.text ), card_frame_ );
-                          l->setWordWrap( true );
-                          l->setAlignment( Qt::AlignCenter );
-                          l->setStyleSheet(
-                              "font-size: 24px; font-weight: bold; color: #ffffff; border: none;" );
-                          question_layout_->addWidget( l );
-                      },
-                       [&]( const ImageContent& c ) {
-                           QLabel* imgLabel = new QLabel( card_frame_ );
-                           imgLabel->setAlignment( Qt::AlignCenter );
+    visit(
+        overloaded{
+            [&]( const TextContent& c ) {
+                QLabel* l = new QLabel( QString::fromStdString( c.text ), card_frame_ );
+                l->setWordWrap( true );
+                l->setAlignment( Qt::AlignCenter );
+                l->setStyleSheet(
+                    "font-size: 24px; font-weight: bold; color: #ffffff; border: none;" );
+                question_layout_->addWidget( l );
+            },
+            [&]( const ImageContent& c ) {
+                QLabel* imgLabel = new QLabel( card_frame_ );
+                imgLabel->setAlignment( Qt::AlignCenter );
 
-                           QString path = getMediaPath( c.image_path );
+                QString path = getMediaPath( c.image_path );
 
-                           QPixmap pix( path );
-                           if ( !pix.isNull() ) {
-                               imgLabel->setPixmap( pix.scaled( 500, 350, Qt::KeepAspectRatio,
-                                                                Qt::SmoothTransformation ) );
-                           } else {
-                               qDebug() << "Image load error:" << path;
-                               imgLabel->setText( tr( "[Image load error]\n" ) + path );
-                               imgLabel->setStyleSheet( "color: #e53935; font-weight: bold;" );
-                           }
-                           question_layout_->addWidget( imgLabel );
-                       },
-                       [&]( const SoundContent& c ) {
-                           QPushButton* btn =
-                               new QPushButton( "▶ " + tr( "Play sound" ), card_frame_ );
-                           btn->setFixedSize( 200, 60 );
-                           btn->setStyleSheet( "font-size: 16px;" );
-                           // to-do: implement sound playback
-                           question_layout_->addWidget( btn );
-                           QLabel* info = new QLabel(
-                               tr( "(Sound: " ) + QString::fromStdString( c.sound_path ) + ")",
-                               card_frame_ );
-                           info->setStyleSheet( "color: #888; border: none;" );
-                           question_layout_->addWidget( info );
-                       } },
-           questionPayload );
+                QPixmap pix( path );
+                if ( !pix.isNull() ) {
+                    imgLabel->setPixmap(
+                        pix.scaled( 500, 350, Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
+                } else {
+                    qDebug() << "Image load error:" << path;
+                    imgLabel->setText( tr( "[Image load error]\n" ) + path );
+                    imgLabel->setStyleSheet( "color: #e53935; font-weight: bold;" );
+                }
+                question_layout_->addWidget( imgLabel );
+            },
+            [&]( const SoundContent& c ) {
+                QPushButton* btn = new QPushButton( "▶ " + tr( "Play sound" ), card_frame_ );
+                btn->setFixedSize( 200, 60 );
+                btn->setCursor( Qt::PointingHandCursor );
+                QString defaultStyle =
+                    "font-size: 16px; background-color: #0078d4; color: white; "
+                    "border-radius: 8px; font-weight: bold;";
+                QString disabledStyle =
+                    "font-size: 16px; background-color: #444; color: #aaa; "
+                    "border-radius: 8px; font-weight: bold; border: 1px solid #555;";
+                btn->setStyleSheet( defaultStyle );
+                QString path = getMediaPath( c.sound_path );
+                if ( !QFile::exists( path ) ) qCritical() << "File does not exist:" << path;
+
+                connect( btn, &QPushButton::clicked, this,
+                         [this, path, btn, defaultStyle, disabledStyle]() {
+                             ensureAudioInitialized();
+                             if ( player_ ) {
+                                 player_->disconnect( btn );
+                                 btn->setEnabled( false );
+                                 btn->setStyleSheet( disabledStyle );
+                                 connect(
+                                     player_, &QMediaPlayer::mediaStatusChanged, btn,
+                                     [this, btn, defaultStyle]( QMediaPlayer::MediaStatus status ) {
+                                         if ( status == QMediaPlayer::EndOfMedia ) {
+                                             btn->setEnabled( true );
+                                             btn->setStyleSheet( defaultStyle );
+                                             player_->stop();
+                                         }
+                                     } );
+
+                                 player_->setSource( QUrl::fromLocalFile( path ) );
+                                 player_->play();
+                             }
+                         } );
+                question_layout_->addWidget( btn );
+                QLabel* info = new QLabel(
+                    tr( "(Sound: " ) + QString::fromStdString( c.sound_path ) + ")", card_frame_ );
+                info->setStyleSheet( "color: #888; border: none;" );
+                question_layout_->addWidget( info );
+            } },
+        questionPayload );
 }
 
 void LearningView::renderInteraction( const Card& card ) {
