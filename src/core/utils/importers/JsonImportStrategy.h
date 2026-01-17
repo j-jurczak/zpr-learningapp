@@ -7,5 +7,9 @@
 
 class JsonImportStrategy : public IImportStrategy {
 public:
-    bool import( const QString& filepath, DatabaseManager& db, QString& error_msg ) override;
+    explicit JsonImportStrategy( const QString& media_root = "" );
+    bool import( const QString& file_path, DatabaseManager& db, QString& set_name_out ) override;
+
+private:
+    QString media_root_;
 };
