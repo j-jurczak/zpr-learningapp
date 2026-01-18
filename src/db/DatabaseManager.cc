@@ -308,6 +308,11 @@ bool DatabaseManager::deleteSet( int set_id ) {
         return false;
     }
 
+    if ( query.numRowsAffected() == 0 ) {
+         database_.rollback();
+         return false;
+    }
+
     return database_.commit();
 }
 
@@ -383,6 +388,10 @@ bool DatabaseManager::deleteCard( int card_id ) {
     if ( !query.exec() ) {
         qCritical() << "Could not delete card ID:" << card_id
                     << " Error:" << query.lastError().text();
+        return false;
+    }
+
+    if ( query.numRowsAffected() == 0 ) {
         return false;
     }
     return true;
