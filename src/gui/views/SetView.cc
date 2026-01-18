@@ -249,9 +249,9 @@ void SetView::loadData() {
                         "stop:%4 #444, "
                         "stop:1 #444)" )
                         .arg( end_green )
-                        .arg( std::min( 1.0, end_green + eps ) )
+                        .arg( min( 1.0, end_green + eps ) )
                         .arg( end_orange )
-                        .arg( std::min( 1.0, end_orange + eps ) );
+                        .arg( min( 1.0, end_orange + eps ) );
         }
 
         chart->setStyleSheet( style );

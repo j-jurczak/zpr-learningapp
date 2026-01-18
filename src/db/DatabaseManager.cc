@@ -481,7 +481,7 @@ vector<Card> DatabaseManager::getCardsWithQuery( const QString& sql, int set_id,
 
 SetStats DatabaseManager::getSetStatistics( int set_id ) const {
     SetStats stats;
-    std::vector<Card> cards = getCardsForSet( set_id );
+    vector<Card> cards = getCardsForSet( set_id );
     stats.total = cards.size();
 
     QSqlQuery query( database_ );

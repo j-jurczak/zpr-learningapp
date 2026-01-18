@@ -102,14 +102,12 @@ void AddSetView::onCardSaved( const DraftCard& card ) {
 
     QString label;
 
-    if ( std::holds_alternative<TextContent>( card.question ) ) {
-        label += "[T] " + QString::fromStdString( std::get<TextContent>( card.question ).text );
-    } else if ( std::holds_alternative<ImageContent>( card.question ) ) {
-        label +=
-            "[IMG] " + QString::fromStdString( std::get<ImageContent>( card.question ).image_path );
-    } else if ( std::holds_alternative<SoundContent>( card.question ) ) {
-        label +=
-            "[SND] " + QString::fromStdString( std::get<SoundContent>( card.question ).sound_path );
+    if ( holds_alternative<TextContent>( card.question ) ) {
+        label += "[T] " + QString::fromStdString( get<TextContent>( card.question ).text );
+    } else if ( holds_alternative<ImageContent>( card.question ) ) {
+        label += "[IMG] " + QString::fromStdString( get<ImageContent>( card.question ).image_path );
+    } else if ( holds_alternative<SoundContent>( card.question ) ) {
+        label += "[SND] " + QString::fromStdString( get<SoundContent>( card.question ).sound_path );
     }
 
     label += " -> " + QString::fromStdString( card.correct_answer );
