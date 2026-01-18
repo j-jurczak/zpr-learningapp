@@ -15,6 +15,8 @@
 #include "../../core/utils/StyleLoader.h"
 #include "../../core/utils/SetImporter.h"
 
+using namespace std;
+
 HomeView::HomeView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     this->setObjectName( "content" );
 
