@@ -4,7 +4,7 @@
 #include <iostream>
 #include <variant>
 
-#include "../../src/core/learning/Card.h"
+#include "core/learning/Card.h"
 
 using namespace std;
 

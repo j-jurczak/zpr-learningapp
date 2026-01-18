@@ -6,10 +6,10 @@
 #include <iostream>
 #include <variant>
 
-#include "../../src/core/learning/LearningSession.h"
-#include "../../src/core/learning/strategies/SelectionStrategies.h"
-#include "../../src/db/DatabaseManager.h"
-#include "../../src/core/learning/Card.h"
+#include "core/learning/LearningSession.h"
+#include "core/learning/strategies/SelectionStrategies.h"
+#include "db/DatabaseManager.h"
+#include "core/learning/Card.h"
 
 using namespace std;
 

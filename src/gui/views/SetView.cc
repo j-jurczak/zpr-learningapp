@@ -56,7 +56,8 @@ void SetView::setupUi() {
     header_layout->addWidget( title_label_ );
     header_layout->addStretch();
 
-    QPushButton* btn_delete_set = new QPushButton( "🗑 " + tr( "Delete Set" ), this );
+    QPushButton* btn_delete_set = new QPushButton( tr( "Delete Set" ), this );
+    btn_delete_set->setIcon( style()->standardIcon( QStyle::SP_TrashIcon ) );
     btn_delete_set->setCursor( Qt::PointingHandCursor );
     btn_delete_set->setProperty( "type", "danger" );
 
@@ -283,7 +284,8 @@ void SetView::loadData() {
             overlay_container_->setContent( current_preview_.get() );
         } );
 
-        QPushButton* btn_delete = new QPushButton( "✕", row_widget );
+        QPushButton* btn_delete = new QPushButton( row_widget );
+        btn_delete->setIcon( style()->standardIcon( QStyle::SP_TrashIcon ) );
         btn_delete->setFixedSize( 30, 30 );
         btn_delete->setCursor( Qt::PointingHandCursor );
         btn_delete->setObjectName( "deleteCardBtn" );

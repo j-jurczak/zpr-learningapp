@@ -7,9 +7,10 @@
 
 class JsonImportStrategy : public IImportStrategy {
 public:
-    explicit JsonImportStrategy( const QString& media_root = "" );
+    explicit JsonImportStrategy( const QString& media_root = "", bool strict_text_only = false );
     bool import( const QString& file_path, DatabaseManager& db, QString& set_name_out ) override;
 
 private:
     QString media_root_;
+    bool strict_text_only_;
 };

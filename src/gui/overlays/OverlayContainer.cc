@@ -2,9 +2,10 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Implementation of the single card addition logic within an overlay.
  */
-#include "OverlayContainer.h"
 #include <QPalette>
 #include <QResizeEvent>
+
+#include "OverlayContainer.h"
 
 OverlayContainer::OverlayContainer( QWidget* parent ) : QWidget( parent ) {
     this->hide();

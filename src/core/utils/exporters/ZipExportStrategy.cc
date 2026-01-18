@@ -1,10 +1,7 @@
 /*
  * @authors: Jakub Jurczak, Mateusz Woźniak
- * summary: Implementation of ZIP export strategy (logic moved from SetExporter).
+ * summary: Implementation of ZIP export strategy
  */
-#include "ZipExportStrategy.h"
-#include "../../learning/Card.h"
-#include "../../utils/Overloaded.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,9 +11,12 @@
 #include <QTemporaryDir>
 #include <QProcess>
 
+#include "ZipExportStrategy.h"
+#include "../../learning/Card.h"
+#include "../../utils/Overloaded.h"
+
 using namespace std;
 
-// Helper to copy file to export dir and return relative path
 static QString copyMediaToExport( const string& relative_path, const QString& export_root ) {
     QString rel = QString::fromStdString( relative_path );
 
@@ -51,7 +51,8 @@ static QString copyMediaToExport( const string& relative_path, const QString& ex
     }
 }
 
-bool ZipExportStrategy::exportSet( int set_id, const DatabaseManager& db, const QString& dest_path ) {
+bool ZipExportStrategy::exportSet( int set_id, const DatabaseManager& db,
+                                   const QString& dest_path ) {
     auto cards = db.getCardsForSet( set_id );
 
     QString set_name = "Exported Set";
@@ -89,22 +90,21 @@ bool ZipExportStrategy::exportSet( int set_id, const DatabaseManager& db, const 
         }
 
         // Question Payload & Media
-        visit( overloaded{
-            [&]( const TextContent& c ) {
-                c_obj["question"] = QString::fromStdString( c.text );
-                c_obj["media_type"] = "text";
-            },
-            [&]( const ImageContent& c ) {
-                QString rel = copyMediaToExport( c.image_path, temp_path );
-                c_obj["question"] = rel;
-                c_obj["media_type"] = "image";
-            },
-            [&]( const SoundContent& c ) {
-                QString rel = copyMediaToExport( c.sound_path, temp_path );
-                c_obj["question"] = rel;
-                c_obj["media_type"] = "sound";
-            }
-        }, data.question );
+        visit( overloaded{ [&]( const TextContent& c ) {
+                              c_obj["question"] = QString::fromStdString( c.text );
+                              c_obj["media_type"] = "text";
+                          },
+                           [&]( const ImageContent& c ) {
+                               QString rel = copyMediaToExport( c.image_path, temp_path );
+                               c_obj["question"] = rel;
+                               c_obj["media_type"] = "image";
+                           },
+                           [&]( const SoundContent& c ) {
+                               QString rel = copyMediaToExport( c.sound_path, temp_path );
+                               c_obj["question"] = rel;
+                               c_obj["media_type"] = "sound";
+                           } },
+               data.question );
 
         cards_arr.append( c_obj );
     }

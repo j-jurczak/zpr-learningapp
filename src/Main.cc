@@ -8,6 +8,7 @@
 #include <QDebug>
 #include <QSqlDatabase>
 #include <QSqlError>
+
 #include "db/DatabaseManager.h"
 #include "gui/MainWindow.h"
 #include "gui/views/ViewFactory.h"
@@ -20,19 +21,16 @@ int main( int argc, char *argv[] ) {
 
     StyleLoader::setGlobalStyle();
 
-    // Load language from settings, default to English ("en")
+    // Load language from settings
     QSettings settings( "ZPR", "LearningApp" );
     QString lang = settings.value( "language", "en" ).toString();
 
-    // Load language using new modular manager
     LanguageManager::loadLanguage( lang );
 
     // database setup
     DatabaseManager db_manager;
     if ( !db_manager.connect() || !db_manager.createTables() ) return -1;
-    // db_manager.seedData();
 
-    // run app
     ViewFactory view_factory( db_manager );
     MainWindow main_window( view_factory );
     main_window.show();

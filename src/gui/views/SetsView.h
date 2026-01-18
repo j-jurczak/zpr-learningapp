@@ -5,6 +5,7 @@
 #pragma once
 #include <QListWidget>
 #include <QWidget>
+
 #include "../../db/DatabaseManager.h"
 
 class SetsView : public QWidget {

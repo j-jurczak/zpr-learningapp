@@ -13,6 +13,7 @@
 #include <QMediaPlayer>
 #include <QAudioOutput>
 #include <QUrl>
+#include <QStyle>
 
 #include "CardPreviewOverlay.h"
 #include "../../core/utils/Overloaded.h"
@@ -59,7 +60,8 @@ void CardPreviewOverlay::setupUi( const Card& card ) {
     QLabel* title = new QLabel( tr( "CARD PREVIEW" ), top_bar );
     title->setObjectName( "dialogTitle" );
 
-    QPushButton* btn_close = new QPushButton( "✕", top_bar );
+    QPushButton* btn_close = new QPushButton( top_bar );
+    btn_close->setIcon( style()->standardIcon( QStyle::SP_DialogCloseButton ) );
     btn_close->setObjectName( "closeBtn" );
     btn_close->setFixedSize( 30, 30 );
     btn_close->setCursor( Qt::PointingHandCursor );
