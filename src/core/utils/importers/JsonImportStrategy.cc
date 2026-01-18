@@ -31,14 +31,14 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
     file.close();
 
     QJsonDocument doc = QJsonDocument::fromJson( data );
-    if ( doc.isNull() ) {
+    if( doc.isNull() ) {
         qCritical() << "Invalid JSON file.";
         return false;
     }
 
     QJsonObject root = doc.object();
 
-    if ( root.contains( "name" ) && root["name"].isString() ) {
+    if( root.contains( "name" ) && root["name"].isString() ) {
         set_name_out = root["name"].toString();
     } else {
         set_name_out = "Importowany Zestaw";
@@ -51,12 +51,12 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
 
     QJsonArray cards_array = root["cards"].toArray();
 
-    if ( strict_text_only_ ) {
-        for ( const auto& val : cards_array ) {
+    if( strict_text_only_ ) {
+        for( const auto& val : cards_array ) {
             QJsonObject obj = val.toObject();
-            if ( obj.contains( "media_type" ) ) {
+            if( obj.contains( "media_type" ) ) {
                 QString type = obj["media_type"].toString();
-                if ( type == "image" || type == "sound" ) {
+                if( type == "image" || type == "sound" ) {
                     set_name_out = "Import plików JSON obsługuje tylko pytania tekstowe.";
                     return false;
                 }
@@ -79,9 +79,7 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
             }
         }
 
-        // Check for media path in question and copy if media_root_ is set
-        // The q_str might be "media/images/timestamp.jpg"
-        if ( !media_root_.isEmpty() &&
+        if( !media_root_.isEmpty() &&
              ( obj["media_type"].toString() == "image" || obj["media_type"].toString() == "sound" ) ) {
 
             QString rel_path = QString::fromStdString( q_str );
@@ -89,14 +87,12 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
 
             QFileInfo src_info( source_path );
             if ( src_info.exists() ) {
-                // Generate new name to avoid conflicts
                 QString ext = src_info.suffix();
                 QString new_name = QString::number( QDateTime::currentMSecsSinceEpoch() ) +
                                    QString::number( qHash( rel_path ) ) + "." + ext;
 
                 QString subfolder = ( obj["media_type"].toString() == "sound" ) ? "sounds" : "images";
 
-                // Determine dest path
                 QString app_data_path;
                 #ifdef PROJECT_ROOT
                     app_data_path = QString( PROJECT_ROOT );
@@ -109,9 +105,6 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
                 QString dest_full = dest_dir.filePath( "data/media/" + subfolder + "/" + new_name );
 
                 if ( QFile::copy( source_path, dest_full ) ) {
-                    // Update q_str to potentially new relative path or just ensure valid structure
-                    // The app expects "images/filename.jpg" or "sounds/filename.mp3" usually?
-                    // Actually AddCardOverlay saves as "images/..." into the DB.
                     q_str = ( subfolder + "/" + new_name ).toStdString();
                 } else {
                     qWarning() << "Failed to copy import media:" << source_path;
@@ -120,10 +113,6 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
         }
 
         DraftCard draft;
-
-        // Determine type based on imported data or explicit type
-        // If we successfully saved media, q_str is now a path.
-        // We need to set the correct Variant type.
 
         bool is_image = false;
         bool is_sound = false;
@@ -134,9 +123,9 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
             else if ( type == "sound" ) is_sound = true;
         }
 
-        if ( is_image ) {
+        if( is_image ) {
             draft.question = ImageContent{ q_str };
-        } else if ( is_sound ) {
+        } else if( is_sound ) {
             draft.question = SoundContent{ q_str };
         } else {
              draft.question = TextContent{ q_str };

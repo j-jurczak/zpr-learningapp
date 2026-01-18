@@ -37,7 +37,6 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
     main_layout->setContentsMargins( 0, 0, 0, 0 );
     main_layout->setSpacing( 0 );
 
-    // sidebar
     QWidget* sidebar_container = new QWidget( this );
     sidebar_container->setFixedWidth( 250 );
     sidebar_container->setObjectName( "sidebar" );
@@ -57,7 +56,6 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
 
     main_layout->addWidget( sidebar_container );
 
-    // view 'subwindow'
     main_stack_ = new QStackedWidget( this );
 
     home_view_ = factory_.create( ViewType::HOME, {}, this );
@@ -76,7 +74,6 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
 }
 
 void MainWindow::setupConnections() {
-    // sidebar buttons
     connect( btn_home_, &QPushButton::clicked, this, [this]() {
         if ( confirmSessionExit() ) {
             main_stack_->setCurrentWidget( home_view_ );
@@ -98,13 +95,11 @@ void MainWindow::setupConnections() {
         }
     } );
 
-    // settings view language change
     if ( auto* settings_ptr = qobject_cast<SettingsView*>( settings_view_ ) ) {
         connect( settings_ptr, &SettingsView::languageChanged, this,
                  &MainWindow::handleLanguageChange );
     }
 
-    // sets view logic
     if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
         auto openSetLogic = [this, sets_view_ptr]( int set_id ) {
             QWidget* detail_view = factory_.create( ViewType::SET_VIEW, set_id, this );
@@ -121,7 +116,6 @@ void MainWindow::setupConnections() {
                              sets_view_ptr->refreshSetsList();
                          } );
 
-                // LearningView start logic
                 connect(
                     detail_ptr, &SetView::learnClicked, this,
                     [this, detail_view, sets_view_ptr]( int id, LearningMode mode ) {
@@ -152,7 +146,6 @@ void MainWindow::setupConnections() {
         connect( sets_view_ptr, &SetsView::setClicked, this, openSetLogic );
         connect( sets_view_ptr, &SetsView::setImported, this, openSetLogic );
 
-        // new set button
         connect( sets_view_ptr, &SetsView::newSetClicked, this, [this, sets_view_ptr]() {
             QWidget* add_view = factory_.create( ViewType::ADD_SET, {}, this );
 
@@ -178,7 +171,6 @@ void MainWindow::setupConnections() {
         } );
     }
 
-    // home view logic
     if ( auto* home_ptr = qobject_cast<HomeView*>( home_view_ ) ) {
         connect( home_ptr, &HomeView::newSetClicked, this, [this]() {
             QWidget* add_view = factory_.create( ViewType::ADD_SET, {}, this );

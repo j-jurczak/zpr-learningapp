@@ -2,10 +2,11 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Implementation of LanguageManager.
  */
-#include "LanguageManager.h"
 #include <QDir>
 #include <QDebug>
 #include <QCoreApplication>
+
+#include "LanguageManager.h"
 
 QTranslator* LanguageManager::m_translator = nullptr;
 

@@ -3,8 +3,8 @@
  * summary: Helper class for exporting sets to ZIP archive with media.
  */
 #pragma once
-
 #include <QString>
+
 #include "../../db/DatabaseManager.h"
 
 class SetExporter {

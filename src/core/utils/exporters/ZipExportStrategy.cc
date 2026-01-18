@@ -1,10 +1,7 @@
 /*
  * @authors: Jakub Jurczak, Mateusz Woźniak
- * summary: Implementation of ZIP export strategy (logic moved from SetExporter).
+ * summary: Implementation of ZIP export strategy
  */
-#include "ZipExportStrategy.h"
-#include "../../learning/Card.h"
-#include "../../utils/Overloaded.h"
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -14,9 +11,14 @@
 #include <QTemporaryDir>
 #include <QProcess>
 
+#include "ZipExportStrategy.h"
+#include "../../learning/Card.h"
+#include "../../utils/Overloaded.h"
+
+
 using namespace std;
 
-// Helper to copy file to export dir and return relative path
+
 static QString copyMediaToExport( const string& relative_path, const QString& export_root ) {
     QString rel = QString::fromStdString( relative_path );
 

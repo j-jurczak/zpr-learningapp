@@ -5,6 +5,7 @@
 #pragma once
 #include <QWidget>
 #include <QVariant>
+
 #include "../../db/DatabaseManager.h"
 #include "ViewType.h"
 

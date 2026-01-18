@@ -88,11 +88,11 @@ bool DatabaseManager::createTables() {
         "CREATE TABLE IF NOT EXISTS cards ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
         "set_id INTEGER NOT NULL, "
-        "question TEXT NOT NULL, "  // either text or path to media
+        "question TEXT NOT NULL, "
         "correct_answer TEXT NOT NULL, "
         "wrong_answers TEXT, "
-        "media_type INTEGER DEFAULT 0, "   // Enum MediaType
-        "answer_type INTEGER DEFAULT 0, "  // Enum AnswerType
+        "media_type INTEGER DEFAULT 0, "
+        "answer_type INTEGER DEFAULT 0, "
         "FOREIGN KEY(set_id) REFERENCES sets(id) ON DELETE CASCADE"
         ")" );
 

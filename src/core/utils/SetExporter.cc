@@ -2,10 +2,12 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Implementation of SetExporter using Strategy pattern.
  */
-#include "SetExporter.h"
-#include "exporters/ZipExportStrategy.h"
 #include <QFileInfo>
 #include <memory>
+
+#include "SetExporter.h"
+#include "exporters/ZipExportStrategy.h"
+
 
 using namespace std;
 
