@@ -1,0 +1,18 @@
+QPushButton#btnAddCard {
+    background-color: #2d2d30;
+    border: 1px dashed #555;
+    color: #cccccc;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+QPushButton#btnAddCard:hover {
+    background-color: #3e3e42;
+    border-color: #007acc;
+    color: white;
+}
+
+QPushButton#btnAddCard:pressed {
+    background-color: #007acc;
+    border-style: solid;
+}

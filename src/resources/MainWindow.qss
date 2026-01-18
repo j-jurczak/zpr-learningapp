@@ -1,50 +1,32 @@
-QMainWindow {
-    background-color: #2b2b2b;
-}
-
 QWidget#sidebar {
     background-color: #252526;
     border-right: 1px solid #3e3e42;
 }
 
-QWidget#content {
-    background-color: #1e1e1e;
-}
 
 QWidget#sidebar QPushButton {
-    color: #cccccc;
-    text-align: left;
-    background: transparent;
+    background-color: transparent;
     border: none;
-    font-size: 16px;
-    padding: 5px;
+    border-radius: 0px;
+    color: #999999;
+    text-align: left;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: normal;
 }
 
 QWidget#sidebar QPushButton:hover {
+    background-color: #2a2d2e;
     color: #ffffff;
 }
 
-QLabel#title {
+QWidget#sidebar QPushButton:checked,
+QWidget#sidebar QPushButton:pressed {
+    background-color: #37373d;
     color: #ffffff;
-    font-size: 32px;
-    font-weight: bold;
+    border-left: 4px solid #007acc;
 }
 
-QLabel#subtitle {
-    color: #aaaaaa;
-    font-size: 18px;
-    margin-bottom: 20px;
-}
-
-QPushButton#action_btn {
-    color: #ffffff;
-    background-color: transparent;
-    border: 2px solid #555555;
-    border-radius: 10px;
-    font-size: 16px;
-}
-
-QPushButton#action_btn:hover {
-    background-color: #333333;
-    border-color: #777777;
+QWidget#contentArea {
+    background-color: #1e1e1e;
 }

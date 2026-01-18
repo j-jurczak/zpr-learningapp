@@ -54,11 +54,10 @@ TEST_CASE( "Card Class Functionality", "[Card]" ) {
 
         REQUIRE( image_quiz_card.getQuestion() == "[Media Content]" );
 
-        bool holds_image =
-            std::holds_alternative<ImageContent>( image_quiz_card.getData().question );
+        bool holds_image = holds_alternative<ImageContent>( image_quiz_card.getData().question );
         REQUIRE( holds_image );
         if ( holds_image ) {
-            REQUIRE( std::get<ImageContent>( image_quiz_card.getData().question ).image_path ==
+            REQUIRE( get<ImageContent>( image_quiz_card.getData().question ).image_path ==
                      "stop_sign.png" );
         }
     }

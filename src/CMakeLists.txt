@@ -25,6 +25,8 @@ add_library(CoreLib STATIC
     core/utils/exporters/IExportStrategy.h
     core/utils/exporters/ZipExportStrategy.cc
     core/utils/exporters/ZipExportStrategy.h
+    core/utils/StyleLoader.cc
+    core/utils/StyleLoader.h
 
     # DB
     db/DatabaseManager.cc
@@ -33,7 +35,7 @@ add_library(CoreLib STATIC
 
 )
 
-target_link_libraries(CoreLib PUBLIC Qt6::Sql) # SQLite
+target_link_libraries(CoreLib PUBLIC Qt6::Sql Qt::Widgets) # SQLite
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
