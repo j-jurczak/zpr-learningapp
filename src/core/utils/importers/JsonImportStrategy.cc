@@ -16,8 +16,8 @@
 
 using namespace std;
 
-JsonImportStrategy::JsonImportStrategy( const QString& media_root )
-    : media_root_( media_root ) {}
+JsonImportStrategy::JsonImportStrategy( const QString& media_root, bool strict_text_only )
+    : media_root_( media_root ), strict_text_only_( strict_text_only ) {}
 
 bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
                                  QString& set_name_out ) {
@@ -50,6 +50,19 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
     }
 
     QJsonArray cards_array = root["cards"].toArray();
+
+    if ( strict_text_only_ ) {
+        for ( const auto& val : cards_array ) {
+            QJsonObject obj = val.toObject();
+            if ( obj.contains( "media_type" ) ) {
+                QString type = obj["media_type"].toString();
+                if ( type == "image" || type == "sound" ) {
+                    set_name_out = "Import plików JSON obsługuje tylko pytania tekstowe.";
+                    return false;
+                }
+            }
+        }
+    }
     vector<DraftCard> cards_to_import;
 
     for ( const auto& val : cards_array ) {
