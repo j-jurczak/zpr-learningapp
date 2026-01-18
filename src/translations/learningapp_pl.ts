@@ -627,8 +627,8 @@ Progress is saved automatically.</source>
         <translation>Brak zestawów. Kliknij &apos;+&apos;, aby dodać.</translation>
     </message>
     <message>
-        <source>Archive files (*.zip);;All files (*)</source>
-        <translation>Archiwa (*.zip);;Wszystkie pliki (*)</translation>
+        <source>Archive files (*.zip);;JSON files (*.json);;All files (*)</source>
+        <translation>Archiwa (*.zip);;Pliki JSON (*.json);;Wszystkie pliki (*)</translation>
     </message>
     <message>
         <source>Export</source>

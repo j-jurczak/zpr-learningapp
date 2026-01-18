@@ -7,6 +7,7 @@
 #include "SetImporter.h"
 #include "importers/IImportStrategy.h"
 #include "importers/ZipImportStrategy.h"
+#include "importers/JsonImportStrategy.h"
 
 #include <QTemporaryDir>
 #include <QProcess>
@@ -24,6 +25,8 @@ bool SetImporter::importFile( const QString& filepath, DatabaseManager& db, QStr
 
     if ( ext == "zip" ) {
         strategy = make_unique<ZipImportStrategy>();
+    } else if ( ext == "json" ) {
+        strategy = make_unique<JsonImportStrategy>( "" );
     } else {
         error_msg = "Cannot process file format: " + ext;
         return false;

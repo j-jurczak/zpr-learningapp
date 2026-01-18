@@ -48,7 +48,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
         QApplication::beep();
         QFileDialog dialog( nullptr, tr( "Choose set file" ) );
         dialog.setDirectory( QDir::homePath() );
-        dialog.setNameFilter( tr( "Archive files (*.zip);;All files (*)" ) );
+        dialog.setNameFilter( tr( "Archive files (*.zip);;JSON files (*.json);;All files (*)" ) );
         dialog.setFileMode( QFileDialog::ExistingFile );
         dialog.setOption( QFileDialog::DontUseNativeDialog, true );
 
@@ -93,7 +93,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
         QString setName = item->text();
 
         QString defaultName = setName + ".zip";
-        QString fileName = QFileDialog::getSaveFileName( this, tr( "Export Set" ),
+        QString fileName = QFileDialog::getSaveFileName( nullptr, tr( "Export Set" ),
                                                          QDir::homePath() + "/" + defaultName,
                                                          tr( "Archive files (*.zip)" ) );
 
@@ -149,7 +149,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
             connect( exportAction, &QAction::triggered, this, [this, id, item]() {
                 QString defaultName = item->text() + ".zip";
                 QString fileName = QFileDialog::getSaveFileName(
-                    this, tr( "Export Set" ), QDir::homePath() + "/" + defaultName,
+                    nullptr, tr( "Export Set" ), QDir::homePath() + "/" + defaultName,
                     tr( "Archive files (*.zip)" ) );
                 if ( !fileName.isEmpty() ) {
                     if ( SetExporter::exportSet( id, db_manager_, fileName ) ) {
