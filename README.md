@@ -23,4 +23,5 @@ sudo apt install -y catch2
 sudo apt install -y qt6-multimedia-dev
 sudo apt install -y gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav
 sudo apt install -y gstreamer1.0-pulseaudio gstreamer1.0-alsa
+sudo apt install -y zip
 ```

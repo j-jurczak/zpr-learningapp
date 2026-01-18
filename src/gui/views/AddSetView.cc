@@ -48,6 +48,7 @@ void AddSetView::setupUi() {
     main_layout->addWidget( new QLabel( tr( "Cards in set:" ), this ) );
 
     preview_list_ = new QListWidget( this );
+    preview_list_->setSelectionMode( QAbstractItemView::NoSelection );
     main_layout->addWidget( preview_list_ );
 
     btn_open_creator_ = new QPushButton( "+ " + tr( "Add new card" ), this );
@@ -100,24 +101,52 @@ void AddSetView::onAddCardClicked() {
 void AddSetView::onCardSaved( const DraftCard& card ) {
     draft_cards_.push_back( card );
 
-    QString label;
+    QString label_text;
 
     if ( holds_alternative<TextContent>( card.question ) ) {
-        label += "[T] " + QString::fromStdString( get<TextContent>( card.question ).text );
+        label_text += "[T] " + QString::fromStdString( get<TextContent>( card.question ).text );
     } else if ( holds_alternative<ImageContent>( card.question ) ) {
-        label += "[IMG] " + QString::fromStdString( get<ImageContent>( card.question ).image_path );
+        label_text +=
+            "[IMG] " + QString::fromStdString( get<ImageContent>( card.question ).image_path );
     } else if ( holds_alternative<SoundContent>( card.question ) ) {
-        label += "[SND] " + QString::fromStdString( get<SoundContent>( card.question ).sound_path );
+        label_text +=
+            "[SND] " + QString::fromStdString( get<SoundContent>( card.question ).sound_path );
     }
 
-    label += " -> " + QString::fromStdString( card.correct_answer );
+    label_text += " -> " + QString::fromStdString( card.correct_answer );
 
-    if ( card.answer_type == AnswerType::TEXT_CHOICE ) label += tr( " (Quiz)" );
-    if ( card.answer_type == AnswerType::INPUT ) label += tr( " (Input)" );
+    if ( card.answer_type == AnswerType::TEXT_CHOICE ) label_text += tr( " (Quiz)" );
+    if ( card.answer_type == AnswerType::INPUT ) label_text += tr( " (Input)" );
 
-    QListWidgetItem* item = new QListWidgetItem( label );
-    preview_list_->addItem( item );
+    QListWidgetItem* item = new QListWidgetItem( preview_list_ );
+    item->setSizeHint( QSize( 0, 50 ) );
 
+    QWidget* row_widget = new QWidget();
+    QHBoxLayout* row_layout = new QHBoxLayout( row_widget );
+    row_layout->setContentsMargins( 5, 0, 5, 0 );
+    row_layout->setSpacing( 10 );
+
+    QLabel* info_label = new QLabel( label_text, row_widget );
+    info_label->setObjectName( "draftCardLabel" );
+
+    QPushButton* btn_delete = new QPushButton( "✕", row_widget );
+    btn_delete->setFixedSize( 30, 30 );
+    btn_delete->setCursor( Qt::PointingHandCursor );
+    btn_delete->setObjectName( "deleteDraftBtn" );
+
+    connect( btn_delete, &QPushButton::clicked, this, [this, item]() {
+        int row = preview_list_->row( item );
+        if ( row >= 0 && row < (int)draft_cards_.size() ) {
+            draft_cards_.erase( draft_cards_.begin() + row );
+            delete preview_list_->takeItem( row );
+        }
+    } );
+
+    row_layout->addWidget( info_label );
+    row_layout->addStretch();
+    row_layout->addWidget( btn_delete );
+
+    preview_list_->setItemWidget( item, row_widget );
     preview_list_->scrollToBottom();
 }
 

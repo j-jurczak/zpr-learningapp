@@ -16,3 +16,23 @@ QPushButton#btnAddCard:pressed {
     background-color: #007acc;
     border-style: solid;
 }
+
+QLabel#draftCardLabel {
+    color: #f0f0f0;
+    font-size: 14px;
+    background: transparent;
+}
+
+QPushButton#deleteDraftBtn {
+    background-color: transparent;
+    color: #888;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 15px;
+}
+
+QPushButton#deleteDraftBtn:hover {
+    background-color: rgba(198, 40, 40, 0.2);
+    color: #e57373;
+}
