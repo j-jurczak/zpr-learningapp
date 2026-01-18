@@ -258,22 +258,32 @@ Destination: </source>
         <source>Import</source>
         <translation>Importuj</translation>
     </message>
+    <message>
+        <source>Choose set file</source>
+        <translation type="unfinished">Wybierz plik zestawu</translation>
+    </message>
+    <message>
+        <source>Archive files (*.zip);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Success</source>
+        <translation type="unfinished">Sukces</translation>
+    </message>
+    <message>
+        <source>Set imported successfully!</source>
+        <translation type="unfinished">Zestaw zaimportowany pomyślnie!</translation>
+    </message>
+    <message>
+        <source>Import Error</source>
+        <translation type="unfinished">Błąd Importu</translation>
+    </message>
 </context>
 <context>
     <name>LearningView</name>
     <message>
         <source>Congratulations!</source>
         <translation>Gratulacje!</translation>
-    </message>
-    <message>
-        <source>That&apos;s all for today!
-SM-2 algorithm does not predict more reviews for now.
-
-If you want to continue learning, choose &apos;Quick Review&apos; mode or reset progress in the menu.</source>
-        <translation>Na dzisiaj to wszystko!
-Algorytm SM-2 nie przewiduje więcej powtórek na teraz.
-
-Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub zresetuj postępy w menu.</translation>
     </message>
     <message>
         <source>Empty</source>
@@ -297,7 +307,7 @@ Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub z
     </message>
     <message>
         <source>[Image load error]</source>
-        <translation>[Błąd ładowania obrazka]
+        <translation type="vanished">[Błąd ładowania obrazka]
 </translation>
     </message>
     <message>
@@ -346,19 +356,19 @@ Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub z
     </message>
     <message>
         <source>Again (0)</source>
-        <translation>Powtórz (0)</translation>
+        <translation type="vanished">Powtórz (0)</translation>
     </message>
     <message>
         <source>Hard (3)</source>
-        <translation>Trudne (3)</translation>
+        <translation type="vanished">Trudne (3)</translation>
     </message>
     <message>
         <source>Good (4)</source>
-        <translation>Dobre (4)</translation>
+        <translation type="vanished">Dobre (4)</translation>
     </message>
     <message>
         <source>Easy (5)</source>
-        <translation>Łatwe (5)</translation>
+        <translation type="vanished">Łatwe (5)</translation>
     </message>
     <message>
         <source>Finished</source>
@@ -367,6 +377,82 @@ Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub z
     <message>
         <source>Session finished!</source>
         <translation>Sesja zakończona!</translation>
+    </message>
+    <message>
+        <source>That&apos;s all for today!
+SM-2 algorithm does not predict more reviews for now.
+
+If you want to continue learning, choose &apos;Quick Review&apos; mode or reset progress in the menu.</source>
+        <translation>Na dzisiaj to wszystko!
+Algorytm SM-2 nie przewiduje więcej powtórek na teraz.
+
+Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub zresetuj postępy w menu.</translation>
+    </message>
+    <message>
+        <source>[Image load error]
+</source>
+        <translation>[Błąd ładowania obrazka]
+</translation>
+    </message>
+    <message>
+        <source>0
+Blackout</source>
+        <translation>0
+Zaciemnienie</translation>
+    </message>
+    <message>
+        <source>Complete blackout</source>
+        <translation>Całkowita pustka w głowie</translation>
+    </message>
+    <message>
+        <source>1
+Incorrect</source>
+        <translation>1
+Źle</translation>
+    </message>
+    <message>
+        <source>Wrong answer, correct one remembered</source>
+        <translation>Zła odpowiedź, ale poprawna przypomniana</translation>
+    </message>
+    <message>
+        <source>2
+Hard Fail</source>
+        <translation>2
+Pomyłka</translation>
+    </message>
+    <message>
+        <source>Wrong answer, but it seemed easy</source>
+        <translation>Zła odpowiedź, choć wydawało się łatwe</translation>
+    </message>
+    <message>
+        <source>3
+Hard Pass</source>
+        <translation>3
+Z trudem</translation>
+    </message>
+    <message>
+        <source>Correct with difficulty</source>
+        <translation>Poprawnie z trudnością</translation>
+    </message>
+    <message>
+        <source>4
+Good</source>
+        <translation>4
+Dobrze</translation>
+    </message>
+    <message>
+        <source>Correct after hesitation</source>
+        <translation>Poprawnie po wahaniu</translation>
+    </message>
+    <message>
+        <source>5
+Perfect</source>
+        <translation>5
+Idealnie</translation>
+    </message>
+    <message>
+        <source>Perfect recall</source>
+        <translation>Perfekcyjna pamięć</translation>
     </message>
 </context>
 <context>
@@ -394,8 +480,13 @@ Jeśli chcesz uczyć się dalej, wybierz tryb &apos;Szybka powtórka&apos; lub z
     <message>
         <source>Learning session is in progress. Are you sure you want to quit?
 Progress is saved automatically.</source>
-        <translation>Sesja nauki jest w toku. Czy na pewno chcesz ją przerwać?
+        <translation type="vanished">Sesja nauki jest w toku. Czy na pewno chcesz ją przerwać?
 Postępy są zapisywane na bieżąco.</translation>
+    </message>
+    <message>
+        <source>Learning session is in progress. Are you sure you want to quit? 
+Progress is saved automatically.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -480,6 +571,22 @@ Postępy są zapisywane na bieżąco.</translation>
         <source>Delete this question?</source>
         <translation>Usunąć to pytanie?</translation>
     </message>
+    <message>
+        <source>Total Cards: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mastered: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Learning: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New: </source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>SetsView</name>
@@ -501,7 +608,7 @@ Postępy są zapisywane na bieżąco.</translation>
     </message>
     <message>
         <source>Data files (*.json *.csv);;All files (*)</source>
-        <translation>Pliki danych (*.json *.csv);;Wszystkie pliki (*)</translation>
+        <translation type="vanished">Pliki danych (*.json *.csv);;Wszystkie pliki (*)</translation>
     </message>
     <message>
         <source>Success</source>
@@ -518,6 +625,50 @@ Postępy są zapisywane na bieżąco.</translation>
     <message>
         <source>No sets. Click &apos;+&apos; to add.</source>
         <translation>Brak zestawów. Kliknij &apos;+&apos;, aby dodać.</translation>
+    </message>
+    <message>
+        <source>Archive files (*.zip);;All files (*)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Please select a set from the list to export.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export Set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Archive files (*.zip)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set exported successfully!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <translation type="unfinished">Błąd</translation>
+    </message>
+    <message>
+        <source>Failed to export set.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set Options</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Open</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Export (ZIP)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
