@@ -1,0 +1,79 @@
+QPushButton#cardContent {
+    text-align: left;
+    border: none;
+    padding-left: 10px;
+    background: transparent;
+    color: #f0f0f0;
+    font-size: 16px;
+}
+
+QPushButton#cardContent:hover {
+    color: #007acc;
+}
+
+QPushButton#deleteCardBtn {
+    color: #888;
+    border: none;
+    font-weight: bold;
+    background: transparent;
+    font-size: 16px;
+    border-radius: 15px;
+}
+
+QPushButton#deleteCardBtn:hover {
+    color: #c62828;
+    background-color: rgba(198, 40, 40, 0.1);
+}
+
+QFrame#statsContainer {
+    background-color: #252526;
+    border-radius: 8px;
+    border: 1px solid #3e3e42;
+}
+
+QLabel#statsTotal {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    border: none;
+}
+
+QLabel#statsMastered {
+    color: #388e3c;
+    font-weight: bold;
+    border: none;
+}
+
+QLabel#statsLearning {
+    color: #f57c00;
+    font-weight: bold;
+    border: none;
+}
+
+QLabel#statsNew {
+    color: #888;
+    border: none;
+}
+
+QMenu {
+    background-color: #2d2d30;
+    color: #ffffff;
+    border: 1px solid #3e3e42;
+    padding: 5px;
+}
+
+QMenu::item {
+    padding: 8px 25px;
+    background-color: transparent;
+}
+
+QMenu::item:selected {
+    background-color: #007acc;
+    color: white;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: #555;
+    margin: 5px 0;
+}

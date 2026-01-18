@@ -1,9 +1,15 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/">
+        <file>resources/Global.qss</file>
         <file>resources/MainWindow.qss</file>
-        <file>resources/SetsView.qss</file>
-        <file>resources/AddSetView.qss</file>
-        <file>resources/SetView.qss</file>
+        <file>resources/views/HomeView.qss</file>
+        <file>resources/views/SetsView.qss</file>
+        <file>resources/views/SettingsView.qss</file>
+        <file>resources/views/LearningView.qss</file>
+        <file>resources/views/AddSetView.qss</file>
+        <file>resources/views/SetView.qss</file>
+        <file>resources/overlays/AddCardOverlay.qss</file>
+        <file>resources/overlays/CardPreviewOverlay.qss</file>
     </qresource>
 </RCC>

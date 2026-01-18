@@ -7,20 +7,20 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QListWidgetItem>
-#include <QFile>
 #include <QDebug>
 #include <variant>
 
 #include "AddSetView.h"
 #include "../overlays/AddCardOverlay.h"
 #include "../overlays/OverlayContainer.h"
+#include "../../core/utils/StyleLoader.h"
 
 using namespace std;
 
 AddSetView::AddSetView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_( db ) {
     overlay_container_ = make_unique<OverlayContainer>( this );
     setupUi();
-    setupStyles();
+    StyleLoader::attach( this, "views/AddSetView.qss" );
 }
 
 void AddSetView::resizeEvent( QResizeEvent* event ) {
@@ -30,46 +30,31 @@ void AddSetView::resizeEvent( QResizeEvent* event ) {
     }
 }
 
-void AddSetView::setupStyles() {
-    QFile file( ":/resources/AddSetView.qss" );
-    if ( file.open( QFile::ReadOnly ) ) {
-        this->setStyleSheet( QString::fromLatin1( file.readAll() ) );
-        file.close();
-    }
-}
-
 void AddSetView::setupUi() {
     QVBoxLayout* main_layout = new QVBoxLayout( this );
     main_layout->setContentsMargins( 30, 30, 30, 30 );
     main_layout->setSpacing( 20 );
 
     QLabel* header = new QLabel( tr( "Create New Set" ), this );
-    header->setStyleSheet(
-        "font-size: 24px; font-weight: bold; color: white; margin-bottom: 10px;" );
+    header->setObjectName( "title" );
     main_layout->addWidget( header );
 
     main_layout->addWidget( new QLabel( tr( "Set name:" ), this ) );
+
     name_input_ = new QLineEdit( this );
     name_input_->setPlaceholderText( tr( "E.g. History - Dates" ) );
-    name_input_->setStyleSheet(
-        "padding: 12px; font-size: 16px; background: #252526; color: white; border: 1px solid "
-        "#3e3e42; border-radius: 5px;" );
     main_layout->addWidget( name_input_ );
 
     main_layout->addWidget( new QLabel( tr( "Cards in set:" ), this ) );
+
     preview_list_ = new QListWidget( this );
-    preview_list_->setStyleSheet(
-        "QListWidget { background: #1e1e1e; border: 1px solid #3e3e42; border-radius: 5px; "
-        "font-size: 14px; } QListWidget::item { padding: 10px; border-bottom: 1px solid #333; }" );
     main_layout->addWidget( preview_list_ );
 
     btn_open_creator_ = new QPushButton( "+ " + tr( "Add new card" ), this );
     btn_open_creator_->setCursor( Qt::PointingHandCursor );
     btn_open_creator_->setMinimumHeight( 50 );
-    btn_open_creator_->setStyleSheet(
-        "QPushButton { background-color: #0078d4; color: white; font-weight: bold; font-size: "
-        "16px; border-radius: 5px; }"
-        "QPushButton:hover { background-color: #006cbd; }" );
+    btn_open_creator_->setObjectName( "btnAddCard" );
+
     connect( btn_open_creator_, &QPushButton::clicked, this, &AddSetView::onAddCardClicked );
     main_layout->addWidget( btn_open_creator_ );
 
@@ -79,16 +64,13 @@ void AddSetView::setupUi() {
 
     QPushButton* btn_cancel = new QPushButton( tr( "Cancel" ), this );
     btn_cancel->setCursor( Qt::PointingHandCursor );
-    btn_cancel->setStyleSheet(
-        "background: transparent; border: 1px solid #555; color: #ccc; padding: 10px 20px; "
-        "border-radius: 5px;" );
+
     connect( btn_cancel, &QPushButton::clicked, this, [this]() { emit creationCancelled(); } );
 
     QPushButton* btn_save = new QPushButton( tr( "Create Set" ), this );
     btn_save->setCursor( Qt::PointingHandCursor );
-    btn_save->setStyleSheet(
-        "background-color: #2e7d32; color: white; font-weight: bold; padding: 10px 20px; "
-        "border-radius: 5px;" );
+    btn_save->setProperty( "type", "primary" );
+
     connect( btn_save, &QPushButton::clicked, this, &AddSetView::saveSet );
 
     bottom_btns->addStretch();
@@ -103,9 +85,7 @@ void AddSetView::onAddCardClicked() {
 
     connect( overlay, &AddCardOverlay::cardSaved, this, [this, overlay]( const DraftCard& card ) {
         this->onCardSaved( card );
-
         overlay_container_->clearContent();
-
         overlay->deleteLater();
     } );
 

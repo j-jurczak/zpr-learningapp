@@ -12,10 +12,13 @@
 #include "gui/MainWindow.h"
 #include "gui/views/ViewFactory.h"
 #include "core/utils/LanguageManager.h"
+#include "core/utils/StyleLoader.h"
 
 int main( int argc, char *argv[] ) {
     qputenv( "LIBGL_ALWAYS_SOFTWARE", "1" );
     QApplication app( argc, argv );
+
+    StyleLoader::setGlobalStyle();
 
     // Load language from settings, default to English ("en")
     QSettings settings( "ZPR", "LearningApp" );

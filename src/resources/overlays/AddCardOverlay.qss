@@ -1,0 +1,42 @@
+QWidget#addCardOverlay {
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+QWidget#dialogBox {
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    border: 1px solid #3e3e42;
+}
+
+QLabel#dialogTitle {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    border: none;
+    margin-bottom: 10px;
+}
+
+QLabel#filePreviewLabel {
+    color: #888;
+    border: 1px dashed #555;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+QLabel#filePreviewLabel[state="selected"] {
+    color: #4caf50;
+    border: 1px solid #4caf50;
+    font-weight: bold;
+}
+
+QLineEdit#wrongAnswerInput {
+    padding: 6px;
+    background-color: #252526;
+    color: #ccc;
+    border: 1px solid #3e3e42;
+    border-radius: 4px;
+}
+
+QLineEdit#wrongAnswerInput:focus {
+    border: 1px solid #007acc;
+}

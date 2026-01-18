@@ -12,6 +12,13 @@
 #include "../core/learning/Card.h"
 #include "../core/learning/StudySet.h"
 
+struct SetStats {
+    int total = 0;
+    int new_cards = 0;
+    int learning = 0;
+    int mastered = 0;
+};
+
 class DatabaseManager {
 public:
     explicit DatabaseManager( const QString& db_name = "learning_app.db" );
@@ -40,6 +47,8 @@ public:
                              const std::string& next_date );
     bool resetSetProgress( int set_id );
     static std::string calculateNextDate( int days_from_now );
+
+    SetStats getSetStatistics( int set_id ) const;
 
 private:
     QSqlDatabase database_;

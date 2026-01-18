@@ -19,6 +19,7 @@ protected:
 signals:
     void setClicked( int set_id );
     void newSetClicked();
+    void setImported( int set_id );
 
 private:
     void setupStyles();

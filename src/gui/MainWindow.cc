@@ -16,6 +16,7 @@
 #include "MainWindow.h"
 #include "views/SettingsView.h"
 #include "../core/utils/LanguageManager.h"
+#include "../core/utils/StyleLoader.h"
 #include "views/ViewType.h"
 #include "views/ViewFactory.h"
 #include "views/SetsView.h"
@@ -69,7 +70,8 @@ MainWindow::MainWindow( ViewFactory& factory, QWidget* parent )
 
     main_layout->addWidget( main_stack_ );
 
-    setupStyles();
+    StyleLoader::attach( this, "MainWindow.qss" );
+
     setupConnections();
 }
 
@@ -104,26 +106,25 @@ void MainWindow::setupConnections() {
 
     // sets view logic
     if ( auto* sets_view_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
-        connect( sets_view_ptr, &SetsView::setClicked, this, [this]( int set_id ) {
+        auto openSetLogic = [this, sets_view_ptr]( int set_id ) {
             QWidget* detail_view = factory_.create( ViewType::SET_VIEW, set_id, this );
 
             main_stack_->addWidget( detail_view );
             main_stack_->setCurrentWidget( detail_view );
 
             if ( auto* detail_ptr = qobject_cast<SetView*>( detail_view ) ) {
-                connect( detail_ptr, &SetView::backToSetsClicked, this, [this, detail_view]() {
-                    main_stack_->setCurrentWidget( sets_view_ );
-                    main_stack_->removeWidget( detail_view );
-                    detail_view->deleteLater();
-                    if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
-                        sets_ptr->refreshSetsList();
-                    }
-                } );
+                connect( detail_ptr, &SetView::backToSetsClicked, this,
+                         [this, detail_view, sets_view_ptr]() {
+                             main_stack_->setCurrentWidget( sets_view_ptr );
+                             main_stack_->removeWidget( detail_view );
+                             detail_view->deleteLater();
+                             sets_view_ptr->refreshSetsList();
+                         } );
 
                 // LearningView start logic
                 connect(
                     detail_ptr, &SetView::learnClicked, this,
-                    [this, detail_view]( int id, LearningMode mode ) {
+                    [this, detail_view, sets_view_ptr]( int id, LearningMode mode ) {
                         QWidget* learning_widget = factory_.create( ViewType::LEARNING, {}, this );
 
                         if ( auto* learning_ptr = qobject_cast<LearningView*>( learning_widget ) ) {
@@ -131,16 +132,13 @@ void MainWindow::setupConnections() {
                             main_stack_->setCurrentWidget( learning_widget );
                             learning_ptr->startSession( id, mode );
 
-                            connect(
-                                learning_ptr, &LearningView::sessionFinished, this,
-                                [this, learning_widget]() {
-                                    if ( auto* sets_ptr = qobject_cast<SetsView*>( sets_view_ ) ) {
-                                        sets_ptr->refreshSetsList();
-                                    }
-                                    main_stack_->setCurrentWidget( sets_view_ );
-                                    main_stack_->removeWidget( learning_widget );
-                                    learning_widget->deleteLater();
-                                } );
+                            connect( learning_ptr, &LearningView::sessionFinished, this,
+                                     [this, learning_widget, sets_view_ptr]() {
+                                         sets_view_ptr->refreshSetsList();
+                                         main_stack_->setCurrentWidget( sets_view_ptr );
+                                         main_stack_->removeWidget( learning_widget );
+                                         learning_widget->deleteLater();
+                                     } );
                             main_stack_->removeWidget( detail_view );
                             detail_view->deleteLater();
 
@@ -149,7 +147,10 @@ void MainWindow::setupConnections() {
                         }
                     } );
             }
-        } );
+        };
+
+        connect( sets_view_ptr, &SetsView::setClicked, this, openSetLogic );
+        connect( sets_view_ptr, &SetsView::setImported, this, openSetLogic );
 
         // new set button
         connect( sets_view_ptr, &SetsView::newSetClicked, this, [this, sets_view_ptr]() {
@@ -159,16 +160,17 @@ void MainWindow::setupConnections() {
             main_stack_->setCurrentWidget( add_view );
 
             if ( auto* add_ptr = qobject_cast<AddSetView*>( add_view ) ) {
-                connect( add_ptr, &AddSetView::creationCancelled, this, [this, add_view]() {
-                    main_stack_->setCurrentWidget( sets_view_ );
-                    main_stack_->removeWidget( add_view );
-                    add_view->deleteLater();
-                } );
+                connect( add_ptr, &AddSetView::creationCancelled, this,
+                         [this, add_view, sets_view_ptr]() {
+                             main_stack_->setCurrentWidget( sets_view_ptr );
+                             main_stack_->removeWidget( add_view );
+                             add_view->deleteLater();
+                         } );
 
                 connect( add_ptr, &AddSetView::setCreated, this, [this, add_view, sets_view_ptr]() {
                     qDebug() << "MainWindow: Set created - refreshing list.";
                     sets_view_ptr->refreshSetsList();
-                    main_stack_->setCurrentWidget( sets_view_ );
+                    main_stack_->setCurrentWidget( sets_view_ptr );
                     main_stack_->removeWidget( add_view );
                     add_view->deleteLater();
                 } );
@@ -217,15 +219,6 @@ bool MainWindow::confirmSessionExit() {
         return ( reply == QMessageBox::Yes );
     }
     return true;
-}
-
-void MainWindow::setupStyles() {
-    QFile file( ":/resources/MainWindow.qss" );
-    if ( file.open( QFile::ReadOnly ) ) {
-        QString style_sheet = QLatin1String( file.readAll() );
-        this->setStyleSheet( style_sheet );
-        file.close();
-    }
 }
 
 MainWindow::~MainWindow() {}

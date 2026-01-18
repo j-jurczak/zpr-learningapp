@@ -6,9 +6,16 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QPushButton>
-#include "HomeView.h"
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QApplication>
+#include <QDir>
 
-HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
+#include "HomeView.h"
+#include "../../core/utils/StyleLoader.h"
+#include "../../core/utils/SetImporter.h"
+
+HomeView::HomeView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     this->setObjectName( "content" );
 
     QVBoxLayout* layout = new QVBoxLayout( this );
@@ -29,11 +36,12 @@ HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
 
     btn_new_set_ = new QPushButton( tr( "New Set" ), this );
     btn_new_set_->setFixedSize( 160, 50 );
-    btn_new_set_->setObjectName( "action_btn" );
+    btn_new_set_->setProperty( "type", "primary" );
+    btn_new_set_->setCursor( Qt::PointingHandCursor );
 
     btn_import_ = new QPushButton( tr( "Import" ), this );
     btn_import_->setFixedSize( 160, 50 );
-    btn_import_->setObjectName( "action_btn" );
+    btn_import_->setCursor( Qt::PointingHandCursor );
 
     buttons_layout->addWidget( btn_new_set_ );
     buttons_layout->addWidget( btn_import_ );
@@ -45,4 +53,38 @@ HomeView::HomeView( QWidget* parent ) : QWidget( parent ) {
     layout->addStretch();
 
     connect( btn_new_set_, &QPushButton::clicked, this, &HomeView::newSetClicked );
+
+    connect( btn_import_, &QPushButton::clicked, this, [this]() {
+        QApplication::beep();
+        QFileDialog dialog( nullptr, tr( "Choose set file" ) );
+        dialog.setDirectory( QDir::homePath() );
+        dialog.setNameFilter( tr( "Archive files (*.zip);;All files (*)" ) );
+        dialog.setFileMode( QFileDialog::ExistingFile );
+        dialog.setOption( QFileDialog::DontUseNativeDialog, true );
+
+        if ( dialog.exec() ) {
+            QStringList files = dialog.selectedFiles();
+            if ( !files.isEmpty() ) {
+                QString error;
+                if ( SetImporter::importFile( files.first(), db_manager_, error ) ) {
+                    QMessageBox::information( this, tr( "Success" ),
+                                              tr( "Set imported successfully!" ) );
+
+                    std::vector<StudySet> sets = db_manager_.getAllSets();
+                    int maxId = -1;
+                    for ( const auto& s : sets ) {
+                        if ( s.id > maxId ) maxId = s.id;
+                    }
+
+                    if ( maxId > 0 ) {
+                        emit setImported( maxId );
+                    }
+                } else {
+                    QMessageBox::critical( nullptr, tr( "Import Error" ), error );
+                }
+            }
+        }
+    } );
+
+    StyleLoader::attach( this, "views/HomeView.qss" );
 }

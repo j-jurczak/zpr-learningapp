@@ -18,7 +18,7 @@ QWidget* ViewFactory::create( ViewType type, QVariant data, QWidget* parent ) {
             return new SetsView( db_, parent );
 
         case ViewType::HOME:
-            return new HomeView( parent );
+            return new HomeView( db_, parent );
 
         case ViewType::SETTINGS:
             return new SettingsView( parent );

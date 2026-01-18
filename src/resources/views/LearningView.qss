@@ -1,0 +1,203 @@
+QPushButton#btnExit {
+    background-color: #3e3e42;
+    color: #bbb;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 18px;
+    border: 1px solid #555;
+}
+
+QPushButton#btnExit:hover {
+    background-color: #c62828;
+    color: white;
+    border: 1px solid #c62828;
+}
+
+QProgressBar {
+    border: none;
+    background: #333;
+    border-radius: 4px;
+}
+
+QProgressBar::chunk {
+    background: #007acc;
+    border-radius: 4px;
+}
+
+QFrame#cardFrame {
+    background-color: #252526;
+    border-radius: 10px;
+    border: 1px solid #3e3e42;
+}
+
+QLabel#questionLabel {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffffff;
+    border: none;
+}
+
+QLabel[type="error"] {
+    color: #e53935;
+    font-weight: bold;
+}
+
+QPushButton#soundBtn {
+    font-size: 16px;
+    background-color: #0078d4;
+    color: white;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+}
+
+QPushButton#soundBtn:disabled {
+    background-color: #444;
+    color: #aaa;
+    border: 1px solid #555;
+}
+
+QLabel#soundInfoLabel {
+    color: #888;
+    border: none;
+    margin-top: 5px;
+}
+
+QPushButton#showAnswerBtn,
+QPushButton#checkBtn {
+    background-color: #0078d4;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 5px;
+    border: none;
+}
+
+QPushButton#showAnswerBtn:hover,
+QPushButton#checkBtn:hover {
+    background-color: #006cbd;
+}
+
+QPushButton#quizBtn {
+    background-color: #3e3e42;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    text-align: left;
+    padding-left: 15px;
+}
+
+QPushButton#quizBtn:hover {
+    background-color: #4e4e52;
+}
+
+QPushButton#quizBtn[state="correct"] {
+    background-color: #388e3c;
+    border: 1px solid #388e3c;
+    font-weight: bold;
+}
+
+QPushButton#quizBtn[state="wrong"] {
+    background-color: #d32f2f;
+    border: 1px solid #d32f2f;
+    font-weight: bold;
+}
+
+QLineEdit {
+    padding: 10px;
+    font-size: 16px;
+    color: white;
+    background: #3e3e42;
+    border: 1px solid #555;
+    border-radius: 5px;
+}
+
+QLineEdit[state="correct"] {
+    background: #2e7d32;
+    border: 1px solid #2e7d32;
+}
+
+QLineEdit[state="wrong"] {
+    background: #c62828;
+    border: 1px solid #c62828;
+}
+
+QLabel#correctionLabel {
+    color: #a5d6a7;
+    font-weight: bold;
+    margin-top: 5px;
+    font-size: 16px;
+}
+
+QLabel#correctAnswerLabel {
+    font-size: 20px;
+    color: #a5d6a7;
+    font-weight: bold;
+    margin: 20px;
+}
+
+QPushButton#actionBtn {
+    font-weight: bold;
+    color: white;
+    border-radius: 5px;
+    font-size: 14px;
+    border: none;
+}
+
+QPushButton#actionBtn[type="primary"] {
+    background-color: #0078d4;
+}
+
+QPushButton#actionBtn[type="success"] {
+    background-color: #388e3c;
+}
+
+QPushButton#actionBtn[type="failure"] {
+    background-color: #d32f2f;
+}
+
+QPushButton#actionBtn[type="warning"] {
+    background-color: #f57f17;
+}
+
+QPushButton#gradeBtn {
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    font-size: 13px;
+    border: none;
+    padding: 5px;
+    text-align: center;
+}
+
+QPushButton#gradeBtn[grade="0"] {
+    background-color: #370606;
+    color: #ff9999;
+}
+
+QPushButton#gradeBtn[grade="1"] {
+    background-color: #7f0000;
+}
+
+QPushButton#gradeBtn[grade="2"] {
+    background-color: #c62828;
+}
+
+QPushButton#gradeBtn[grade="3"] {
+    background-color: #f57f17;
+    color: black;
+}
+
+QPushButton#gradeBtn[grade="4"] {
+    background-color: #388e3c;
+}
+
+QPushButton#gradeBtn[grade="5"] {
+    background-color: #0288d1;
+}
+
+
+QPushButton#gradeBtn:hover {
+    border: 2px solid white;
+}

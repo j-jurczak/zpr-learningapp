@@ -478,3 +478,30 @@ vector<Card> DatabaseManager::getCardsWithQuery( const QString& sql, int set_id,
     }
     return cards;
 }
+
+SetStats DatabaseManager::getSetStatistics( int set_id ) const {
+    SetStats stats;
+    std::vector<Card> cards = getCardsForSet( set_id );
+    stats.total = cards.size();
+
+    QSqlQuery query( database_ );
+    query.prepare( "SELECT interval FROM learning_progress WHERE card_id = :cid" );
+
+    for ( const auto& card : cards ) {
+        query.bindValue( ":cid", card.getId() );
+
+        int interval = 0;
+        if ( query.exec() && query.next() ) {
+            interval = query.value( 0 ).toInt();
+        }
+        if ( interval == 0 ) {
+            stats.new_cards++;
+        } else if ( interval < 21 ) {
+            stats.learning++;
+        } else {
+            stats.mastered++;
+        }
+    }
+
+    return stats;
+}
