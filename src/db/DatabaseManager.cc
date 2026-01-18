@@ -13,10 +13,21 @@
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <variant>
+#include <QFile>
+#include <QDebug>
 
 #include "DatabaseManager.h"
 
 using namespace std;
+
+// to get absolute path for media files
+static QString getAbsMediaPath( const QString& relPath ) {
+#ifdef PROJECT_ROOT
+    return QDir( QString( PROJECT_ROOT ) ).filePath( "data/media/" + relPath );
+#else
+    return QDir::current().filePath( "data/media/" + relPath );
+#endif
+}
 
 DatabaseManager::DatabaseManager( const QString& db_name ) : db_name_( db_name ) {}
 
@@ -254,6 +265,21 @@ bool DatabaseManager::deleteSet( int set_id ) {
     database_.transaction();
     QSqlQuery query;
 
+    query.prepare( "SELECT question FROM cards WHERE set_id = :id" );
+    query.bindValue( ":id", set_id );
+
+    if ( query.exec() ) {
+        while ( query.next() ) {
+            QString content = query.value( 0 ).toString();
+            if ( content.startsWith( "images/" ) || content.startsWith( "sounds/" ) ) {
+                QString fullPath = getAbsMediaPath( content );
+                QFile::remove( fullPath );
+            }
+        }
+    } else {
+        qWarning() << "Could not fetch cards to delete files for set:" << set_id;
+    }
+
     query.prepare(
         "DELETE FROM learning_progress WHERE card_id IN (SELECT id FROM cards WHERE set_id = "
         ":id)" );
@@ -332,6 +358,25 @@ bool DatabaseManager::addCardToSet( int set_id, const DraftCard& draft ) {
 // delete query to remove a card by id
 bool DatabaseManager::deleteCard( int card_id ) {
     QSqlQuery query;
+
+    query.prepare( "SELECT question FROM cards WHERE id = :id" );
+    query.bindValue( ":id", card_id );
+
+    if ( query.exec() && query.next() ) {
+        QString content = query.value( 0 ).toString();
+        if ( content.startsWith( "images/" ) || content.startsWith( "sounds/" ) ) {
+            QString fullPath = getAbsMediaPath( content );
+            QFile file( fullPath );
+            if ( file.exists() ) {
+                if ( file.remove() ) {
+                    qDebug() << "Usunięto plik powiązany z kartą:" << fullPath;
+                } else {
+                    qWarning() << "Nie udało się usunąć pliku:" << fullPath;
+                }
+            }
+        }
+    }
+
     query.prepare( "DELETE FROM cards WHERE id = :id" );
     query.bindValue( ":id", card_id );
 

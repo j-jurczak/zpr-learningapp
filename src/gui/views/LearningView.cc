@@ -163,6 +163,10 @@ void LearningView::loadCurrentCard() {
         player_->setSource( QUrl() );
     }
     try {
+        if ( session_.isFinished() ) {
+            qWarning() << "Session is already finished when trying to load current card.";
+            return;
+        }
         const Card& card = session_.getCurrentCard();
         clearLayout( question_layout_ );
         clearLayout( interaction_layout_ );
@@ -576,9 +580,13 @@ void LearningView::showGradingButtons() {
 
 void LearningView::clearLayout( QLayout* layout ) {
     if ( !layout ) return;
+
     QLayoutItem* item;
     while ( ( item = layout->takeAt( 0 ) ) != nullptr ) {
-        if ( item->widget() ) delete item->widget();
+        if ( item->widget() ) {
+            item->widget()->hide();
+            item->widget()->deleteLater();
+        }
         delete item;
     }
 }

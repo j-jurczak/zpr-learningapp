@@ -62,7 +62,7 @@ private:
     QWidget* bottom_controls_container_;
     QHBoxLayout* bottom_controls_layout_;
 
-    QMediaPlayer* player_;
-    QAudioOutput* audio_output_;
+    QMediaPlayer* player_ = nullptr;
+    QAudioOutput* audio_output_ = nullptr;
     void ensureAudioInitialized();
 };
