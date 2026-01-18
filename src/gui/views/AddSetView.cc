@@ -12,6 +12,7 @@
 
 #include "AddSetView.h"
 #include "../overlays/AddCardOverlay.h"
+#include "../overlays/CardPreviewOverlay.h"
 #include "../overlays/OverlayContainer.h"
 #include "../../core/utils/StyleLoader.h"
 
@@ -123,16 +124,36 @@ void AddSetView::onCardSaved( const DraftCard& card ) {
 
     QWidget* row_widget = new QWidget();
     QHBoxLayout* row_layout = new QHBoxLayout( row_widget );
-    row_layout->setContentsMargins( 5, 0, 5, 0 );
+    row_layout->setContentsMargins( 0, 0, 10, 0 );
     row_layout->setSpacing( 10 );
 
-    QLabel* info_label = new QLabel( label_text, row_widget );
-    info_label->setObjectName( "draftCardLabel" );
+    QPushButton* btn_content = new QPushButton( label_text, row_widget );
+    btn_content->setCursor( Qt::PointingHandCursor );
+    btn_content->setObjectName( "cardContent" );
+    btn_content->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
+    DraftCard card_copy = card;
 
-    QPushButton* btn_delete = new QPushButton( "✕", row_widget );
+    connect( btn_content, &QPushButton::clicked, this, [this, card_copy]() {
+        CardData data;
+        data.id = 0;
+        data.set_id = 0;
+        data.question = card_copy.question;
+        data.correct_answer = card_copy.correct_answer;
+        data.wrong_answers = card_copy.wrong_answers;
+        data.answer_type = card_copy.answer_type;
+
+        Card previewCard( data );
+
+        auto* preview = new CardPreviewOverlay( previewCard, this );
+        connect( preview, &CardPreviewOverlay::closeClicked, overlay_container_.get(), &OverlayContainer::clearContent );
+        overlay_container_->setContent( preview );
+    });
+
+    QPushButton* btn_delete = new QPushButton( row_widget );
+    btn_delete->setIcon( style()->standardIcon( QStyle::SP_TrashIcon ) );
     btn_delete->setFixedSize( 30, 30 );
     btn_delete->setCursor( Qt::PointingHandCursor );
-    btn_delete->setObjectName( "deleteDraftBtn" );
+    btn_delete->setObjectName( "deleteCardBtn" );
 
     connect( btn_delete, &QPushButton::clicked, this, [this, item]() {
         int row = preview_list_->row( item );
@@ -142,8 +163,7 @@ void AddSetView::onCardSaved( const DraftCard& card ) {
         }
     } );
 
-    row_layout->addWidget( info_label );
-    row_layout->addStretch();
+    row_layout->addWidget( btn_content );
     row_layout->addWidget( btn_delete );
 
     preview_list_->setItemWidget( item, row_widget );

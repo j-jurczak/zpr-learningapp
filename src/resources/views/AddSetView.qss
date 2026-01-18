@@ -17,22 +17,29 @@ QPushButton#btnAddCard:pressed {
     border-style: solid;
 }
 
-QLabel#draftCardLabel {
-    color: #f0f0f0;
-    font-size: 14px;
+QPushButton#cardContent {
+    text-align: left;
+    border: none;
+    padding-left: 10px;
     background: transparent;
+    color: #f0f0f0;
+    font-size: 16px;
 }
 
-QPushButton#deleteDraftBtn {
-    background-color: transparent;
+QPushButton#cardContent:hover {
+    color: #007acc;
+}
+
+QPushButton#deleteCardBtn {
     color: #888;
     border: none;
     font-weight: bold;
+    background: transparent;
     font-size: 16px;
     border-radius: 15px;
 }
 
-QPushButton#deleteDraftBtn:hover {
-    background-color: rgba(198, 40, 40, 0.2);
-    color: #e57373;
+QPushButton#deleteCardBtn:hover {
+    color: #c62828;
+    background-color: rgba(198, 40, 40, 0.1);
 }

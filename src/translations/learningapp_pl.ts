@@ -484,7 +484,7 @@ Progress is saved automatically.</source>
 Postępy są zapisywane na bieżąco.</translation>
     </message>
     <message>
-        <source>Learning session is in progress. Are you sure you want to quit? 
+        <source>Learning session is in progress. Are you sure you want to quit?
 Progress is saved automatically.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -628,27 +628,27 @@ Progress is saved automatically.</source>
     </message>
     <message>
         <source>Archive files (*.zip);;All files (*)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archiwa (*.zip);;Wszystkie pliki (*)</translation>
     </message>
     <message>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Eksportuj</translation>
     </message>
     <message>
         <source>Please select a set from the list to export.</source>
-        <translation type="unfinished"></translation>
+        <translation>Wybierz zestaw z listy do eksportu.</translation>
     </message>
     <message>
         <source>Export Set</source>
-        <translation type="unfinished"></translation>
+        <translation>Eksportuj Zestaw</translation>
     </message>
     <message>
         <source>Archive files (*.zip)</source>
-        <translation type="unfinished"></translation>
+        <translation>Archiwa (*.zip)</translation>
     </message>
     <message>
         <source>Set exported successfully!</source>
-        <translation type="unfinished"></translation>
+        <translation>Zestaw wyeksportowany pomyślnie!</translation>
     </message>
     <message>
         <source>Error</source>
@@ -656,19 +656,19 @@ Progress is saved automatically.</source>
     </message>
     <message>
         <source>Failed to export set.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nie udało się wyeksportować zestawu.</translation>
     </message>
     <message>
         <source>Set Options</source>
-        <translation type="unfinished"></translation>
+        <translation>Opcje Zestawu</translation>
     </message>
     <message>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>Otwórz</translation>
     </message>
     <message>
         <source>Export (ZIP)</source>
-        <translation type="unfinished"></translation>
+        <translation>Eksportuj (ZIP)</translation>
     </message>
 </context>
 <context>
