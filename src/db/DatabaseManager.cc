@@ -203,7 +203,7 @@ vector<Card> DatabaseManager::getRandomCards( int set_id, int limit ) const {
 // retrieved cards due for review (SM-2 logic)
 vector<Card> DatabaseManager::getDueCards( int set_id, int limit ) const {
     QString sql = R"(
-        SELECT c.id, c.set_id, c.question, c.correct_answer, c.wrong_answers, c.answer_type, c.media_type 
+        SELECT c.id, c.set_id, c.question, c.correct_answer, c.wrong_answers, c.answer_type, c.media_type
         FROM cards c
         LEFT JOIN learning_progress lp ON c.id = lp.card_id
         WHERE c.set_id = :id
