@@ -27,6 +27,7 @@ void LanguageManager::loadLanguage( const QString& langCode ) {
     if ( m_translator->load( filename, translationPath ) ) {
         qApp->installTranslator( m_translator );
     } else {
-        qDebug() << "LanguageManager: Failed to load translation for:" << langCode << "at" << translationPath;
+        qDebug() << "LanguageManager: Failed to load translation for:" << langCode << "at"
+                 << translationPath;
     }
 }

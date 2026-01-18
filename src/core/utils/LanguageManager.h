@@ -10,6 +10,7 @@
 class LanguageManager {
 private:
     static QTranslator* m_translator;
+
 public:
     static void loadLanguage( const QString& langCode );
 };

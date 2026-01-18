@@ -21,9 +21,9 @@ bool SetImporter::importFile( const QString& filepath, DatabaseManager& db, QStr
 
     unique_ptr<IImportStrategy> strategy = nullptr;
 
-    if( ext == "zip" ) {
+    if ( ext == "zip" ) {
         strategy = make_unique<ZipImportStrategy>();
-    } else if( ext == "json" ) {
+    } else if ( ext == "json" ) {
         strategy = make_unique<JsonImportStrategy>( "", true );
     } else {
         error_msg = "Cannot process file format: " + ext;

@@ -31,14 +31,14 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
     file.close();
 
     QJsonDocument doc = QJsonDocument::fromJson( data );
-    if( doc.isNull() ) {
+    if ( doc.isNull() ) {
         qCritical() << "Invalid JSON file.";
         return false;
     }
 
     QJsonObject root = doc.object();
 
-    if( root.contains( "name" ) && root["name"].isString() ) {
+    if ( root.contains( "name" ) && root["name"].isString() ) {
         set_name_out = root["name"].toString();
     } else {
         set_name_out = "Importowany Zestaw";
@@ -51,12 +51,12 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
 
     QJsonArray cards_array = root["cards"].toArray();
 
-    if( strict_text_only_ ) {
-        for( const auto& val : cards_array ) {
+    if ( strict_text_only_ ) {
+        for ( const auto& val : cards_array ) {
             QJsonObject obj = val.toObject();
-            if( obj.contains( "media_type" ) ) {
+            if ( obj.contains( "media_type" ) ) {
                 QString type = obj["media_type"].toString();
-                if( type == "image" || type == "sound" ) {
+                if ( type == "image" || type == "sound" ) {
                     set_name_out = "Import plików JSON obsługuje tylko pytania tekstowe.";
                     return false;
                 }
@@ -79,9 +79,8 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
             }
         }
 
-        if( !media_root_.isEmpty() &&
-             ( obj["media_type"].toString() == "image" || obj["media_type"].toString() == "sound" ) ) {
-
+        if ( !media_root_.isEmpty() && ( obj["media_type"].toString() == "image" ||
+                                         obj["media_type"].toString() == "sound" ) ) {
             QString rel_path = QString::fromStdString( q_str );
             QString source_path = QDir( media_root_ ).filePath( rel_path );
 
@@ -91,14 +90,15 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
                 QString new_name = QString::number( QDateTime::currentMSecsSinceEpoch() ) +
                                    QString::number( qHash( rel_path ) ) + "." + ext;
 
-                QString subfolder = ( obj["media_type"].toString() == "sound" ) ? "sounds" : "images";
+                QString subfolder =
+                    ( obj["media_type"].toString() == "sound" ) ? "sounds" : "images";
 
                 QString app_data_path;
-                #ifdef PROJECT_ROOT
-                    app_data_path = QString( PROJECT_ROOT );
-                #else
-                    app_data_path = QDir::currentPath();
-                #endif
+#ifdef PROJECT_ROOT
+                app_data_path = QString( PROJECT_ROOT );
+#else
+                app_data_path = QDir::currentPath();
+#endif
 
                 QDir dest_dir( app_data_path );
                 dest_dir.mkpath( "data/media/" + subfolder );
@@ -119,16 +119,18 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
 
         if ( obj.contains( "media_type" ) ) {
             QString type = obj["media_type"].toString();
-            if ( type == "image" ) is_image = true;
-            else if ( type == "sound" ) is_sound = true;
+            if ( type == "image" )
+                is_image = true;
+            else if ( type == "sound" )
+                is_sound = true;
         }
 
-        if( is_image ) {
+        if ( is_image ) {
             draft.question = ImageContent{ q_str };
-        } else if( is_sound ) {
+        } else if ( is_sound ) {
             draft.question = SoundContent{ q_str };
         } else {
-             draft.question = TextContent{ q_str };
+            draft.question = TextContent{ q_str };
         }
 
         draft.correct_answer = c_str;

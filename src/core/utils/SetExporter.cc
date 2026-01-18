@@ -8,7 +8,6 @@
 #include "SetExporter.h"
 #include "exporters/ZipExportStrategy.h"
 
-
 using namespace std;
 
 bool SetExporter::exportSet( int set_id, const DatabaseManager& db, const QString& dest_path ) {

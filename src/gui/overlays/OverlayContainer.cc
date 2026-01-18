@@ -7,7 +7,6 @@
 
 #include "OverlayContainer.h"
 
-
 OverlayContainer::OverlayContainer( QWidget* parent ) : QWidget( parent ) {
     this->hide();
 

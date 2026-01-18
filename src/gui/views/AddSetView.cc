@@ -145,9 +145,10 @@ void AddSetView::onCardSaved( const DraftCard& card ) {
         Card previewCard( data );
 
         auto* preview = new CardPreviewOverlay( previewCard, this );
-        connect( preview, &CardPreviewOverlay::closeClicked, overlay_container_.get(), &OverlayContainer::clearContent );
+        connect( preview, &CardPreviewOverlay::closeClicked, overlay_container_.get(),
+                 &OverlayContainer::clearContent );
         overlay_container_->setContent( preview );
-    });
+    } );
 
     QPushButton* btn_delete = new QPushButton( row_widget );
     btn_delete->setIcon( style()->standardIcon( QStyle::SP_TrashIcon ) );

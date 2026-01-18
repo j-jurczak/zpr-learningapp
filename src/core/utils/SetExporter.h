@@ -10,5 +10,4 @@
 class SetExporter {
 public:
     static bool exportSet( int set_id, const DatabaseManager& db, const QString& dest_path );
-
 };
