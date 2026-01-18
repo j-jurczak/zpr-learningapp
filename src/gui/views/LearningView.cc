@@ -70,7 +70,6 @@ void LearningView::startSession( int set_id, LearningMode mode ) {
     }
 
     try {
-        // must use std::move because QWidget also has move
         session_.start( set_id, std::move( strategy ), 20 );
 
         try {
@@ -91,7 +90,7 @@ void LearningView::startSession( int set_id, LearningMode mode ) {
             if ( is_sm2_empty ) {
                 QMessageBox::information(
                     this, tr( "Congratulations!" ),
-                    tr( "That's all for today! \nSM-2 algorithm does not predict "
+                    tr( "That's all for today!\nSM-2 algorithm does not predict "
                         "more reviews for now.\n\n"
                         "If you want to continue learning, choose 'Quick Review' mode "
                         "or reset progress in the menu." ) );
