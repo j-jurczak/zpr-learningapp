@@ -227,6 +227,18 @@ Destination: </source>
         <source>WRONG ANSWERS</source>
         <translation>BŁĘDNE ODPOWIEDZI</translation>
     </message>
+    <message>
+        <source>[Image load error] </source>
+        <translation>[Błąd ładowania obrazka] </translation>
+    </message>
+    <message>
+        <source>Play sound</source>
+        <translation>Odtwórz dźwięk</translation>
+    </message>
+    <message>
+        <source>(Sound: </source>
+        <translation>(Dźwięk: </translation>
+    </message>
 </context>
 <context>
     <name>HomeView</name>

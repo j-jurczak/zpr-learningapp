@@ -7,11 +7,17 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QDebug>
+#include <QDir>
+#include <QFileInfo>
+#include <QDateTime>
 
 #include "JsonImportStrategy.h"
 #include "../../learning/Card.h"
 
 using namespace std;
+
+JsonImportStrategy::JsonImportStrategy( const QString& media_root )
+    : media_root_( media_root ) {}
 
 bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
                                  QString& set_name_out ) {
@@ -60,9 +66,68 @@ bool JsonImportStrategy::import( const QString& file_path, DatabaseManager& db,
             }
         }
 
+        // Check for media path in question and copy if media_root_ is set
+        // The q_str might be "media/images/timestamp.jpg"
+        if ( !media_root_.isEmpty() &&
+             ( obj["media_type"].toString() == "image" || obj["media_type"].toString() == "sound" ) ) {
+
+            QString rel_path = QString::fromStdString( q_str );
+            QString source_path = QDir( media_root_ ).filePath( rel_path );
+
+            QFileInfo src_info( source_path );
+            if ( src_info.exists() ) {
+                // Generate new name to avoid conflicts
+                QString ext = src_info.suffix();
+                QString new_name = QString::number( QDateTime::currentMSecsSinceEpoch() ) +
+                                   QString::number( qHash( rel_path ) ) + "." + ext;
+
+                QString subfolder = ( obj["media_type"].toString() == "sound" ) ? "sounds" : "images";
+
+                // Determine dest path
+                QString app_data_path;
+                #ifdef PROJECT_ROOT
+                    app_data_path = QString( PROJECT_ROOT );
+                #else
+                    app_data_path = QDir::currentPath();
+                #endif
+
+                QDir dest_dir( app_data_path );
+                dest_dir.mkpath( "data/media/" + subfolder );
+                QString dest_full = dest_dir.filePath( "data/media/" + subfolder + "/" + new_name );
+
+                if ( QFile::copy( source_path, dest_full ) ) {
+                    // Update q_str to potentially new relative path or just ensure valid structure
+                    // The app expects "images/filename.jpg" or "sounds/filename.mp3" usually?
+                    // Actually AddCardOverlay saves as "images/..." into the DB.
+                    q_str = ( subfolder + "/" + new_name ).toStdString();
+                } else {
+                    qWarning() << "Failed to copy import media:" << source_path;
+                }
+            }
+        }
+
         DraftCard draft;
 
-        draft.question = TextContent{ q_str };
+        // Determine type based on imported data or explicit type
+        // If we successfully saved media, q_str is now a path.
+        // We need to set the correct Variant type.
+
+        bool is_image = false;
+        bool is_sound = false;
+
+        if ( obj.contains( "media_type" ) ) {
+            QString type = obj["media_type"].toString();
+            if ( type == "image" ) is_image = true;
+            else if ( type == "sound" ) is_sound = true;
+        }
+
+        if ( is_image ) {
+            draft.question = ImageContent{ q_str };
+        } else if ( is_sound ) {
+            draft.question = SoundContent{ q_str };
+        } else {
+             draft.question = TextContent{ q_str };
+        }
 
         draft.correct_answer = c_str;
         draft.wrong_answers = wrongs;

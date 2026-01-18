@@ -12,11 +12,13 @@
 #include <QShowEvent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QMenu>
 #include <QDir>
 #include <QApplication>
 
 #include "SetsView.h"
 #include "../../core/utils/SetImporter.h"
+#include "../../core/utils/SetExporter.h"
 
 using namespace std;
 
@@ -49,7 +51,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
         QFileDialog dialog( nullptr, tr( "Choose set file" ) );
 
         dialog.setDirectory( QDir::homePath() );
-        dialog.setNameFilter( tr( "Data files (*.json *.csv);;All files (*)" ) );
+        dialog.setNameFilter( tr( "Archive files (*.zip);;All files (*)" ) );
         dialog.setFileMode( QFileDialog::ExistingFile );
 
         dialog.setOption( QFileDialog::DontUseNativeDialog, true );
@@ -81,6 +83,7 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
 
     list_widget_ = new QListWidget( this );
     list_widget_->setObjectName( "list_widget" );
+    list_widget_->setContextMenuPolicy( Qt::CustomContextMenu );
     layout->addWidget( list_widget_ );
 
     connect( list_widget_, &QListWidget::itemClicked, this, [this]( QListWidgetItem* item ) {
@@ -91,6 +94,34 @@ SetsView::SetsView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
         if ( id <= 0 ) return;
 
         emit setClicked( id );
+    } );
+
+    connect( list_widget_, &QListWidget::customContextMenuRequested, this, [this]( const QPoint& pos ) {
+        QListWidgetItem* item = list_widget_->itemAt( pos );
+        if ( !item ) return;
+
+        int id = item->data( Qt::UserRole ).toInt();
+        if ( id <= 0 ) return; // Invalid set
+
+        QMenu contextMenu( tr( "Set Options" ), this );
+        QAction* exportAction = contextMenu.addAction( tr( "Export (ZIP)" ) );
+
+        connect( exportAction, &QAction::triggered, this, [this, id, item]() {
+             QString defaultName = item->text() + ".zip";
+             QString fileName = QFileDialog::getSaveFileName( this, tr( "Export Set" ),
+                                                              QDir::homePath() + "/" + defaultName,
+                                                              tr( "Archive files (*.zip)" ) );
+
+             if ( !fileName.isEmpty() ) {
+                 if ( SetExporter::exportSet( id, db_manager_, fileName ) ) {
+                     QMessageBox::information( this, tr( "Success" ), tr( "Set exported successfully!" ) );
+                 } else {
+                     QMessageBox::critical( this, tr( "Error" ), tr( "Failed to export set." ) );
+                 }
+             }
+        } );
+
+        contextMenu.exec( list_widget_->mapToGlobal( pos ) );
     } );
 
     setupStyles();

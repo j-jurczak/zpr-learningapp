@@ -8,15 +8,32 @@
 #include <QLabel>
 #include <QFrame>
 #include <QPushButton>
+#include <QDir>
+#include <QPixmap>
+#include <QDebug>
 
-CardPreviewOverlay::CardPreviewOverlay( const std::string& question, const std::string& correct,
-                                        const std::vector<std::string>& wrong, QWidget* parent )
-    : QWidget( parent ) {
-    setupUi( question, correct, wrong );
+#include "../../core/utils/Overloaded.h"
+
+using namespace std;
+
+// Helper to resolve media paths (duplicated from LearningView - consider moving to utils)
+static QString getMediaPath( const string& relative_path ) {
+    QString rel = QString::fromStdString( relative_path );
+#ifdef PROJECT_ROOT
+    QDir dir( QString( PROJECT_ROOT ) );
+    return dir.filePath( "data/media/" + rel );
+#else
+    return QDir::current().filePath( "data/media/" + rel );
+#endif
 }
 
-void CardPreviewOverlay::setupUi( const std::string& question, const std::string& correct,
-                                  const std::vector<std::string>& wrong ) {
+CardPreviewOverlay::CardPreviewOverlay( const Card& card, QWidget* parent )
+    : QWidget( parent ) {
+    setupUi( card );
+}
+
+
+void CardPreviewOverlay::setupUi( const Card& card ) {
     QVBoxLayout* main_layout = new QVBoxLayout( this );
     main_layout->setContentsMargins( 0, 0, 0, 0 );
 
@@ -67,21 +84,51 @@ void CardPreviewOverlay::setupUi( const std::string& question, const std::string
     lbl_q_header->setObjectName( "header" );
     body_layout->addWidget( lbl_q_header );
 
-    QLabel* lbl_question = new QLabel( QString::fromStdString( question ), body );
-    lbl_question->setWordWrap( true );
-    lbl_question->setStyleSheet(
-        "font-size: 18px; font-weight: bold; color: white; margin-bottom: 5px;" );
-    body_layout->addWidget( lbl_question );
+    const auto& questionPayload = card.getData().question;
+
+    visit( overloaded{
+        [&]( const TextContent& c ) {
+            QLabel* lbl_question = new QLabel( QString::fromStdString( c.text ), body );
+            lbl_question->setWordWrap( true );
+            lbl_question->setStyleSheet(
+                "font-size: 18px; font-weight: bold; color: white; margin-bottom: 5px;" );
+            body_layout->addWidget( lbl_question );
+        },
+        [&]( const ImageContent& c ) {
+             QLabel* imgLabel = new QLabel( body );
+             imgLabel->setAlignment( Qt::AlignCenter );
+             QString path = getMediaPath( c.image_path );
+             QPixmap pix( path );
+             if ( !pix.isNull() ) {
+                 imgLabel->setPixmap( pix.scaled( 400, 300, Qt::KeepAspectRatio, Qt::SmoothTransformation ) );
+             } else {
+                 imgLabel->setText( tr( "[Image load error] " ) + path );
+                 imgLabel->setStyleSheet( "color: #e57373;" );
+             }
+             body_layout->addWidget( imgLabel );
+        },
+        [&]( const SoundContent& c ) {
+             QPushButton* btn = new QPushButton( "▶ " + tr( "Play sound" ), body );
+             btn->setCursor( Qt::PointingHandCursor );
+             btn->setStyleSheet("QPushButton { background-color: #3e3e42; color: white; padding: 8px; border-radius: 4px; } QPushButton:hover { background-color: #505050; }");
+             body_layout->addWidget( btn );
+
+             QLabel* info = new QLabel( tr( "(Sound: " ) + QString::fromStdString( c.sound_path ) + ")", body );
+             info->setStyleSheet("color: #888; font-size: 12px;");
+             body_layout->addWidget( info );
+        }
+    }, questionPayload );
 
     QLabel* lbl_a_header = new QLabel( tr( "CORRECT ANSWER" ), body );
     lbl_a_header->setObjectName( "header" );
     body_layout->addWidget( lbl_a_header );
 
-    QLabel* lbl_correct = new QLabel( "✔  " + QString::fromStdString( correct ), body );
+    QLabel* lbl_correct = new QLabel( "✔  " + QString::fromStdString( card.getCorrectAnswer() ), body );
     lbl_correct->setObjectName( "correct" );
     lbl_correct->setWordWrap( true );
     body_layout->addWidget( lbl_correct );
 
+    const auto& wrong = card.getData().wrong_answers;
     if ( !wrong.empty() ) {
         QLabel* lbl_w_header = new QLabel( tr( "WRONG ANSWERS" ), body );
         lbl_w_header->setObjectName( "header" );

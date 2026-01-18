@@ -176,8 +176,6 @@ void SetView::loadData() {
         row_layout->setSpacing( 10 );
 
         QString question = QString::fromStdString( card.getQuestion() );
-        QString correct = QString::fromStdString( card.getCorrectAnswer() );
-        vector<string> choices = card.getChoices();
         int card_id = card.getId();
 
         QPushButton* btn_content = new QPushButton( question, row_widget );
@@ -186,9 +184,8 @@ void SetView::loadData() {
             "text-align: left; border: none; padding-left: 10px; background: transparent;" );
         btn_content->setSizePolicy( QSizePolicy::Expanding, QSizePolicy::Preferred );
 
-        connect( btn_content, &QPushButton::clicked, this, [this, question, correct, choices]() {
-            current_preview_ = make_unique<CardPreviewOverlay>( question.toStdString(),
-                                                                correct.toStdString(), choices );
+        connect( btn_content, &QPushButton::clicked, this, [this, card]() {
+            current_preview_ = make_unique<CardPreviewOverlay>( card );
             auto* ptr = static_cast<CardPreviewOverlay*>( current_preview_.get() );
             connect( ptr, &CardPreviewOverlay::closeClicked, overlay_container_.get(),
                      &OverlayContainer::clearContent );
