@@ -15,9 +15,16 @@ add_library(CoreLib STATIC
     core/utils/LanguageManager.h
     core/utils/SetImporter.cc
     core/utils/SetImporter.h
+    core/utils/SetExporter.cc
+    core/utils/SetExporter.h
     core/utils/importers/IImportStrategy.h
     core/utils/importers/JsonImportStrategy.cc
     core/utils/importers/JsonImportStrategy.h
+    core/utils/importers/ZipImportStrategy.cc
+    core/utils/importers/ZipImportStrategy.h
+    core/utils/exporters/IExportStrategy.h
+    core/utils/exporters/ZipExportStrategy.cc
+    core/utils/exporters/ZipExportStrategy.h
 
     # DB
     db/DatabaseManager.cc
