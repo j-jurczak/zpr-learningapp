@@ -15,6 +15,8 @@
 #include "../../core/utils/StyleLoader.h"
 #include "../../core/utils/SetImporter.h"
 
+using namespace std;
+
 HomeView::HomeView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), db_manager_( db ) {
     this->setObjectName( "content" );
 
@@ -70,7 +72,7 @@ HomeView::HomeView( DatabaseManager& db, QWidget* parent ) : QWidget( parent ), 
                     QMessageBox::information( this, tr( "Success" ),
                                               tr( "Set imported successfully!" ) );
 
-                    std::vector<StudySet> sets = db_manager_.getAllSets();
+                    vector<StudySet> sets = db_manager_.getAllSets();
                     int maxId = -1;
                     for ( const auto& s : sets ) {
                         if ( s.id > maxId ) maxId = s.id;

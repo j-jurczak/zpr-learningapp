@@ -2,7 +2,6 @@
  * @authors: Jakub Jurczak, Mateusz Woźniak
  * summary: Class CardPreviewOverlay, manages the overlay for previewing a card - source file.
  */
-#include "CardPreviewOverlay.h"
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
@@ -11,7 +10,11 @@
 #include <QDir>
 #include <QPixmap>
 #include <QDebug>
+#include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QUrl>
 
+#include "CardPreviewOverlay.h"
 #include "../../core/utils/Overloaded.h"
 #include "../../core/utils/StyleLoader.h"
 
@@ -110,6 +113,30 @@ void CardPreviewOverlay::setupUi( const Card& card ) {
                             tr( "(Sound: " ) + QString::fromStdString( c.sound_path ) + ")", body );
                         info->setObjectName( "soundInfoLabel" );
                         body_layout->addWidget( info );
+                        QMediaPlayer* player = new QMediaPlayer( this );
+                        QAudioOutput* audioOutput = new QAudioOutput( this );
+                        player->setAudioOutput( audioOutput );
+                        audioOutput->setVolume( 1.0 );
+
+                        QString path = getMediaPath( c.sound_path );
+
+                        connect( btn, &QPushButton::clicked, this, [player, path, btn]() {
+                            if ( player->playbackState() == QMediaPlayer::PlayingState ) {
+                                player->stop();
+                                btn->setText( "▶ " + tr( "Play sound" ) );
+                            } else {
+                                player->setSource( QUrl::fromLocalFile( path ) );
+                                player->play();
+                                btn->setText( "■ " + tr( "Stop" ) );
+                            }
+                        } );
+
+                        connect( player, &QMediaPlayer::mediaStatusChanged, this,
+                                 [player, btn]( QMediaPlayer::MediaStatus status ) {
+                                     if ( status == QMediaPlayer::EndOfMedia ) {
+                                         btn->setText( "▶ " + tr( "Play sound" ) );
+                                     }
+                                 } );
                     } },
         questionPayload );
 
