@@ -163,10 +163,6 @@ void LearningView::loadCurrentCard() {
         player_->setSource( QUrl() );
     }
     try {
-        if ( session_.isFinished() ) {
-            qWarning() << "Session is already finished when trying to load current card.";
-            return;
-        }
         const Card& card = session_.getCurrentCard();
         clearLayout( question_layout_ );
         clearLayout( interaction_layout_ );
